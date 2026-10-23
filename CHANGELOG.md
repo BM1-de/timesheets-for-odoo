@@ -26,3 +26,6 @@ First version.
 - Light and dark appearance, keyboard shortcuts, VoiceOver labels.
 - German, English and French, following the language of the Mac; dates and times in the format
   of the Mac's region. Durations also accept English and French units (`2 hours`, `1 heure 30`).
+- Demo mode: the server `demo` shows invented data held in memory, to try the app without Odoo.
+- Separate build for the Mac App Store: updates through the App Store instead of Sparkle, and
+  opening at login stays off until the user turns it on.

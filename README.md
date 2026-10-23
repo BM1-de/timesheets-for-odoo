@@ -61,6 +61,10 @@ Tages steht immer in der Menüleiste.
 
 Läuft der API-Schlüssel ab, meldet die App das und bittet um einen neuen.
 
+**Ohne Odoo ausprobieren:** als Server `demo` und als API-Schlüssel `demo` eintragen. Die App
+zeigt dann erfundene Projekte und Einträge in ihrer Sprache. Was man bucht oder stempelt, bleibt
+bis zum Beenden der App erhalten und verlässt den Mac nicht.
+
 <img src="docs/screenshots/einstellungen.png" width="540" alt="Einstellungen: Funktionen mit Status, Menüleiste, Konto und Allgemein">
 
 ## Rechte in Odoo
@@ -98,7 +102,7 @@ Läuft der API-Schlüssel ab, meldet die App das und bittet um einen neuen.
 
 ## Installation
 
-1. Unter [Releases](https://github.com/BM1-de/zeiterfassung-fuer-odoo/releases/latest) das DMG
+1. Unter [Releases](https://github.com/BM1-de/timesheets-for-odoo/releases/latest) das DMG
    laden und öffnen.
 2. *Zeiterfassung für Odoo* im Fenster auf *Applications* ziehen, das ist der Ordner *Programme*,
    und von dort starten.
@@ -108,10 +112,18 @@ abschalten lässt sich das in ihren Einstellungen. Die Releases sind mit der Dev
 Baumgärtner Marketing GmbH signiert und von Apple geprüft (notarisiert), macOS öffnet sie ohne
 Warnung.
 
+### Fassung für den Mac App Store
+
+Für den Mac App Store gibt es eine eigene Fassung (Ziel *Zeiterfassung App Store*), wie Apple es
+verlangt: Updates kommen über den App Store statt über Sparkle, und *Beim Anmelden am Mac öffnen*
+schaltet man selbst in den Einstellungen ein. Sonst kann sie dasselbe. Texte und Angaben für den
+Eintrag stehen in [docs/app-store.md](docs/app-store.md), die Datenschutzerklärung in
+[PRIVACY.md](PRIVACY.md).
+
 ## Updates
 
 Die App fragt einmal am Tag die Versionsliste
-[`appcast.xml`](https://github.com/BM1-de/zeiterfassung-fuer-odoo/releases/latest/download/appcast.xml)
+[`appcast.xml`](https://github.com/BM1-de/timesheets-for-odoo/releases/latest/download/appcast.xml)
 des neuesten Releases ab. Gibt es eine neue Version, erscheint im Fenster unter der Menüleiste
 *Version … ist verfügbar* mit *Installieren …*; die App lädt sie, ersetzt sich und startet neu.
 Von Hand: *Nach Updates suchen …* im Kontextmenü des Uhrsymbols oder in den Einstellungen, wo sich
@@ -136,6 +148,9 @@ Developer-ID-Zertifikat und Zugang zur Notarisierung signiert es App und DMG und
 Apple prüfen (Hinweise im Skript). Veröffentlicht wird über GitHub Actions, siehe
 [RELEASE.md](RELEASE.md).
 
+Die Fassung für den Mac App Store baut, signiert und lädt `scripts/build-appstore.sh` hoch. Es
+braucht einen API-Schlüssel von App Store Connect (Hinweise im Skript).
+
 ## Entwicklung
 
 - `Zeiterfassung.xcodeproj` in Xcode öffnen; Swift 6, SwiftUI und AppKit. Einzige fremde
@@ -151,8 +166,13 @@ Apple prüfen (Hinweise im Skript). Veröffentlicht wird über GitHub Actions, s
   eigene Stempeln verweigert. Die Tests in `LiveOdooTests.swift` laufen dagegen, wenn die
   Variablen `TEST_RUNNER_ZEITERFASSUNG_LIVE_*` gesetzt sind; nie gegen eine Datenbank mit
   echten Daten.
+- Zwei App-Ziele teilen sich den Code: *Zeiterfassung* (DMG, mit Sparkle) und *Zeiterfassung App
+  Store* (ohne Sparkle, Bedingung `APP_STORE`). Gebaute Apps landen in Ordnern mit der Endung
+  `.noindex`, damit Spotlight sie nicht neben der installierten App anzeigt.
 - Bildschirmfotos: Ein Debug-Build zeichnet seine Ansichten mit erfundenen Daten in Bilddateien,
-  ohne Fenster zu zeigen: `open Zeiterfassung.app --args -renderScreenshots YES`.
+  ohne Fenster zu zeigen: `open Zeiterfassung.app --args -renderScreenshots YES`. Die Bilder für
+  den App Store (2880 × 1800, mit den Daten des Demo-Modus) zeichnet ein Debug-Build des Ziels
+  *Zeiterfassung App Store* mit `-renderAppStoreScreenshots YES -AppleLanguages '(en)' -AppleLocale en_US`.
 - Fensterprüfung: `Zeiterfassung.app/Contents/MacOS/Zeiterfassung -panelCheck YES` öffnet das
   Fenster unter der Menüleiste kurz mit erfundenen Daten und prüft, ob es mittig unter dem Symbol
   hängt und so hoch ist wie sein Inhalt.

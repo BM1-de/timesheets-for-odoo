@@ -9,7 +9,7 @@ import ServiceManagement
 enum AppInfo {
     /// „Zeiterfassung für Odoo“, „Timesheets for Odoo“ … aus `InfoPlist.strings` der jeweiligen Sprache.
     static let name = Bundle.main.object(forInfoDictionaryKey: "CFBundleDisplayName") as? String ?? "Zeiterfassung für Odoo"
-    static let sourceURL = URL(string: "https://github.com/BM1-de/zeiterfassung-fuer-odoo")!
+    static let sourceURL = URL(string: "https://github.com/BM1-de/timesheets-for-odoo")!
     static let licenseURL = URL(string: "https://www.gnu.org/licenses/agpl-3.0.html")!
 
     static var version: String {
@@ -29,7 +29,12 @@ enum AppInfo {
         """)
 
     /// Fremder Code in der App; der vollständige Lizenztext liegt in der App unter Resources.
-    static let thirdPartyNotice = String(localized: "Updates mit Sparkle, © Sparkle-Projekt und Mitwirkende, MIT-Lizenz.")
+    /// Die Fassung aus dem App Store enthält Sparkle nicht.
+    #if APP_STORE
+    static let thirdPartyNotice: String? = nil
+    #else
+    static let thirdPartyNotice: String? = String(localized: "Updates mit Sparkle, © Sparkle-Projekt und Mitwirkende, MIT-Lizenz.")
+    #endif
 }
 
 /// Läuft der Prozess als Wirt für Unit-Tests?
@@ -70,10 +75,13 @@ enum LoginItem {
 
     /// Beim ersten Start aus dem Programme-Ordner ist „Beim Anmelden am Mac öffnen“ eingeschaltet.
     /// Danach entscheidet nur noch der Benutzer, in den Einstellungen der App oder von macOS.
+    /// Aus dem App Store bleibt es aus: Dort darf eine App nur mit Zustimmung mit der Anmeldung starten.
     static func applyDefault(_ preferences: Preferences, bundleURL: URL = Bundle.main.bundleURL) {
+        #if !APP_STORE
         guard !preferences.loginItemDefaultApplied, isInstalled(bundleURL) else { return }
         preferences.loginItemDefaultApplied = true
         try? setEnabled(true)
+        #endif
     }
 
     /// Nur eine App im Programme-Ordner taugt als Anmeldeobjekt, nicht eine aus dem geöffneten DMG

@@ -96,15 +96,15 @@ enum ScreenshotRenderer {
     // MARK: - Daten
 
     /// Freitag, 23. Oktober 2026, 14:52 in Berlin – passend zum Entwurf.
-    private nonisolated static let calendar: Calendar = {
+    nonisolated static let calendar: Calendar = {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = TimeZone(identifier: "Europe/Berlin") ?? .current
         return calendar
     }()
 
-    private nonisolated static let now = calendar.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 14, minute: 52)) ?? Date()
+    nonisolated static let now = calendar.date(from: DateComponents(year: 2026, month: 10, day: 23, hour: 14, minute: 52)) ?? Date()
 
-    private static func makeModel(_ demo: FakeOdoo) -> AppModel {
+    static func makeModel(_ demo: FakeOdoo) -> AppModel {
         let defaults = ScratchDefaults.make("screenshots")
         return AppModel(preferences: Preferences(defaults: defaults), http: demo.client(), secrets: MemorySecretStore(),
                         calendar: calendar, clock: { now })
@@ -159,7 +159,7 @@ enum ScreenshotRenderer {
 
     /// Das Fenster unter der Menüleiste, mit deckendem statt durchscheinendem Hintergrund. Es wird so
     /// hoch wie sein gemessener Inhalt, wie im laufenden Programm.
-    private static func renderPanel(_ model: AppModel, appearance: NSAppearance.Name, to file: URL) async {
+    static func renderPanel(_ model: AppModel, appearance: NSAppearance.Name, to file: URL) async {
         let measurement = Measurement()
         let view = PanelRootView(onOpenSettings: {}, onHeightChange: { measurement.height = $0 })
             .environment(model)
@@ -189,7 +189,7 @@ enum ScreenshotRenderer {
     }
 
     /// - Parameter size: Größe des Bildes; ohne Angabe so groß, wie die Ansicht sein möchte.
-    private static func render(_ view: some View, appearance: NSAppearance.Name, to file: URL,
+    static func render(_ view: some View, appearance: NSAppearance.Name, to file: URL,
                                size: () -> NSSize? = { nil }) async {
         let hosting = NSHostingView(rootView: view)
         let window = NSWindow(contentRect: NSRect(x: -4000, y: -4000, width: 600, height: 900),

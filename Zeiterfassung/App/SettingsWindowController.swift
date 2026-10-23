@@ -9,10 +9,10 @@ import SwiftUI
 @MainActor
 final class SettingsWindowController: NSObject, NSWindowDelegate {
     private let model: AppModel
-    private let updates: Updates
+    private let updates: Updates?
     private var window: NSWindow?
 
-    init(model: AppModel, updates: Updates) {
+    init(model: AppModel, updates: Updates?) {
         self.model = model
         self.updates = updates
     }

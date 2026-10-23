@@ -13,7 +13,9 @@ enum MainMenu {
 
         let appMenu = NSMenu(title: AppInfo.name)
         appMenu.addItem(item(String(localized: "Über \(AppInfo.name)"), #selector(AppDelegate.showAbout(_:)), target: delegate))
+        #if !APP_STORE
         appMenu.addItem(item(String(localized: "Nach Updates suchen …"), #selector(AppDelegate.checkForUpdates(_:)), target: delegate))
+        #endif
         appMenu.addItem(.separator())
         appMenu.addItem(item(String(localized: "Einstellungen …"), #selector(AppDelegate.showSettings(_:)), key: ",", target: delegate))
         appMenu.addItem(.separator())

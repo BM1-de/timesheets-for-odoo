@@ -120,7 +120,7 @@ struct SettingsView: View {
             } header: {
                 Text("Über \(AppInfo.name)")
             } footer: {
-                Text(AppInfo.legalNotice + " " + AppInfo.thirdPartyNotice)
+                Text([AppInfo.legalNotice, AppInfo.thirdPartyNotice].compactMap { $0 }.joined(separator: " "))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

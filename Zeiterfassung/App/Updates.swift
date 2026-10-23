@@ -4,8 +4,24 @@
 
 import AppKit
 import Observation
+#if !APP_STORE
 import Sparkle
+#endif
 
+#if APP_STORE
+/// Die Fassung aus dem App Store aktualisiert der App Store selbst. Sie legt kein `Updates` an,
+/// die Oberfläche blendet die Update-Suche dann aus; der Typ steht nur für die Übersetzung bereit.
+@MainActor
+@Observable
+final class Updates {
+    private(set) var availableVersion: String?
+    @ObservationIgnored var willPresent: (() -> Void)?
+    var automaticallyChecks = false
+    var lastCheck: Date? { nil }
+
+    func checkForUpdates() {}
+}
+#else
 /// Updates über Sparkle: Die App fragt einmal am Tag die Versionsliste auf GitHub ab, weist im Fenster
 /// unter der Menüleiste dezent auf eine neue Version hin und installiert sie auf Wunsch.
 ///
@@ -98,3 +114,4 @@ extension Updates: @preconcurrency SPUStandardUserDriverDelegate {
         availableVersion = nil
     }
 }
+#endif

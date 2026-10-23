@@ -7,7 +7,7 @@
 // sich mit dem öffentlichen Schlüssel der App (SUPublicEDKey) bestätigen lassen, Größe und Version
 // müssen stimmen. Sonst würde jede installierte App das Update ablehnen.
 //
-//   swift scripts/verify-update.swift build/release/Zeiterfassung.app build/release/….dmg build/appcast/appcast.xml
+//   swift scripts/verify-update.swift build/app.noindex/Zeiterfassung.app build/release/….dmg build/appcast/appcast.xml
 
 import CryptoKit
 import Foundation

@@ -165,14 +165,18 @@ final class AppModel {
     /// Die Hauptansicht erscheint erst mit `finishSignIn()`.
     @discardableResult
     func signIn(server: String, apiKey: String, login: String?, database: String?) async throws -> Capabilities {
-        guard let url = ServerAddress.normalize(server) else { throw OdooError.invalidServerAddress }
+        // „demo“ führt zum Demo-Server im Arbeitsspeicher, mit dessen festem Schlüssel.
+        let isDemo = DemoServer.isRequested(server)
+        guard let url = isDemo ? DemoServer.url : ServerAddress.normalize(server) else { throw OdooError.invalidServerAddress }
         guard ServerAddress.isSecure(url) else { throw OdooError.insecureServerAddress }
-        let key = apiKey.trimmed
+        let key = isDemo ? DemoServer.apiKey : apiKey.trimmed
         guard !key.isEmpty else { throw OdooError.unauthorized }
+        let database = isDemo ? nil : database
         isSigningIn = true
         defer { isSigningIn = false }
 
-        let newSession = try await Connector(http: http).connect(serverURL: url, apiKey: key, login: login, database: database)
+        let newSession = try await Connector(http: http).connect(serverURL: url, apiKey: key, login: isDemo ? nil : login,
+                                                                  database: database)
         var newService = makeService(session: newSession, apiKey: key, schema: Schema())
         let found = try await newService.discoverCapabilities()
         newService.schema = found.schema
@@ -185,7 +189,7 @@ final class AppModel {
         preferences.session = newSession
         preferences.cachedCapabilities = found
         // Die Datenbank nur merken, wenn sie eingegeben wurde. Sonst findet die App sie selbst wieder.
-        preferences.loginHints = .init(server: url.absoluteString, login: newSession.login,
+        preferences.loginHints = .init(server: isDemo ? "demo" : url.absoluteString, login: newSession.login,
                                        database: database.flatMap { $0.trimmed.isEmpty ? nil : $0.trimmed })
         preferences.stampingRefused = false
         preferences.timesheetsEnabled = found.timesheets == .available || found.attendance != .available
@@ -948,7 +952,10 @@ final class AppModel {
 
     var userName: String { capabilities?.userName ?? "" }
 
-    var serverDisplay: String { session?.serverURL.host() ?? "" }
+    var serverDisplay: String {
+        guard let url = session?.serverURL else { return "" }
+        return DemoServer.isDemo(url) ? String(localized: "Demo") : url.host() ?? ""
+    }
 
     var interfaceDisplay: String {
         guard let session else { return "" }
@@ -958,7 +965,7 @@ final class AppModel {
 
     /// Zeiterfassung oder Anwesenheiten im Browser.
     var odooWebURL: URL? {
-        guard let session else { return nil }
+        guard let session, !DemoServer.isDemo(session.serverURL) else { return nil }
         let attendanceOnly = attendanceActive && !timesheetsActive
         if (session.serverMajorVersion ?? 19) >= 18 {
             return session.serverURL.appending(path: attendanceOnly ? "odoo/attendances" : "odoo/timesheets")

@@ -19,6 +19,10 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             ScreenshotRenderer.run()
             return
         }
+        if AppStoreScreenshots.isRequested {
+            AppStoreScreenshots.run()
+            return
+        }
         if SelfCheck.isRequested {
             SelfCheck.run()
             return
@@ -38,13 +42,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         NSApp.mainMenu = MainMenu.make(delegate: self)
 
-        let model = AppModel(preferences: Preferences(), http: URLSessionHTTPClient.makeDefault(),
+        let model = AppModel(preferences: Preferences(), http: DemoRoutingHTTPClient(network: URLSessionHTTPClient.makeDefault()),
                              secrets: KeychainStore(service: AppInfo.bundleIdentifier))
         LoginItem.applyDefault(model.preferences)
-        let updates = Updates()
+        let updates = Self.makeUpdates()
         let settingsWindow = SettingsWindowController(model: model, updates: updates)
         let statusBar = StatusBarController(model: model, updates: updates) { [weak settingsWindow] in settingsWindow?.show() }
-        updates.willPresent = { [weak statusBar] in statusBar?.closePanel(deactivating: false) }
+        updates?.willPresent = { [weak statusBar] in statusBar?.closePanel(deactivating: false) }
         self.model = model
         self.updates = updates
         self.settingsWindow = settingsWindow
@@ -53,6 +57,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
+
+    /// Die Fassung aus dem App Store aktualisiert der App Store; eine eigene Update-Suche erlaubt Apple dort nicht.
+    private static func makeUpdates() -> Updates? {
+        #if APP_STORE
+        nil
+        #else
+        Updates()
+        #endif
+    }
 
     @objc func showSettings(_ sender: Any?) {
         statusBar?.closePanel(deactivating: false)
@@ -74,10 +87,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             string: String(localized: "Quellcode und Lizenz"),
             attributes: [.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), .link: AppInfo.sourceURL]
         ))
-        credits.append(NSAttributedString(
-            string: "\n" + AppInfo.thirdPartyNotice,
-            attributes: [.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), .foregroundColor: NSColor.secondaryLabelColor]
-        ))
+        if let notice = AppInfo.thirdPartyNotice {
+            credits.append(NSAttributedString(
+                string: "\n" + notice,
+                attributes: [.font: NSFont.systemFont(ofSize: NSFont.smallSystemFontSize), .foregroundColor: NSColor.secondaryLabelColor]
+            ))
+        }
         let paragraph = NSMutableParagraphStyle()
         paragraph.alignment = .center
         credits.addAttribute(.paragraphStyle, value: paragraph, range: NSRange(location: 0, length: credits.length))

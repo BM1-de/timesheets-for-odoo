@@ -79,7 +79,7 @@ jobs:
       - name: Tests
         run: |
           xcodebuild test -project Zeiterfassung.xcodeproj -scheme Zeiterfassung -destination 'platform=macOS' \
-            -derivedDataPath build/DerivedData | grep -E "error:|✘|recorded an issue|Test run with|TEST (SUCCEEDED|FAILED)"
+            -derivedDataPath build/DerivedData.noindex | grep -E "error:|✘|recorded an issue|Test run with|TEST (SUCCEEDED|FAILED)"
 
       - name: Zertifikat in einen eigenen Schlüsselbund
         if: env.HAS_CERTIFICATE == 'true'
@@ -137,7 +137,7 @@ jobs:
         run: |
           printf '%s' "$SPARKLE_KEY" | SPARKLE_KEY_FILE=- \
             scripts/make-appcast.sh "build/release/Zeiterfassung-fuer-Odoo-$VERSION.dmg" "$VERSION"
-          swift scripts/verify-update.swift build/release/Zeiterfassung.app \
+          swift scripts/verify-update.swift build/app.noindex/Zeiterfassung.app \
             "build/release/Zeiterfassung-fuer-Odoo-$VERSION.dmg" build/appcast/appcast.xml
 
       - name: Release anlegen

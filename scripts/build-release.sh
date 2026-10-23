@@ -3,7 +3,9 @@
 # Copyright (C) 2026 Baumgärtner Marketing GmbH
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Baut die App für Apple Silicon und Intel und packt sie als DMG nach build/release.
+# Baut die App für Apple Silicon und Intel und packt sie als DMG nach build/release. Die App selbst
+# liegt in build/app.noindex und die Zwischenstände in build/DerivedData.noindex: Ordner mit dieser
+# Endung durchsucht Spotlight nicht, sonst stünde jede gebaute Kopie neben der installierten App.
 #
 #   scripts/build-release.sh
 #
@@ -27,10 +29,12 @@ cd "${0:A:h}/.."
 VERSION=${VERSION:-$(xcodebuild -project Zeiterfassung.xcodeproj -target Zeiterfassung -configuration Release -showBuildSettings 2>/dev/null \
   | awk '$1 == "MARKETING_VERSION" { print $3; exit }')}
 OUT=build/release
+STAGE=build/app.noindex
+DERIVED=build/DerivedData.noindex
 # Der Dateiname bleibt ASCII, angezeigt wird „Zeiterfassung für Odoo“ (de.lproj/InfoPlist.strings).
 # Ein „ü“ im Pfad steht je nach Weg mal als ein Zeichen, mal zerlegt da; Sparkle findet die
 # laufende App dann nicht und startet sie nach einem Update nicht neu.
-APP="$OUT/Zeiterfassung.app"
+APP="$STAGE/Zeiterfassung.app"
 DMG="$OUT/Zeiterfassung-fuer-Odoo-$VERSION.dmg"
 IDENTITY="Developer ID Application"
 TEAM_ID=${TEAM_ID:-}
@@ -63,12 +67,12 @@ notarize() {
   fi
 }
 
-rm -rf "$OUT"
-mkdir -p "$OUT"
+rm -rf "$OUT" "$STAGE"
+mkdir -p "$OUT" "$STAGE"
 if [[ -n "$TEAM_ID" ]]; then
   # Archivieren und für Developer ID exportieren: So signiert Xcode auch die Hilfsprogramme von Sparkle richtig.
   xcodebuild archive -project Zeiterfassung.xcodeproj -scheme Zeiterfassung -configuration Release \
-    -destination 'generic/platform=macOS' -archivePath "$WORK/Zeiterfassung.xcarchive" -derivedDataPath build/DerivedData \
+    -destination 'generic/platform=macOS' -archivePath "$WORK/Zeiterfassung.xcarchive" -derivedDataPath "$DERIVED" \
     MARKETING_VERSION="$VERSION" CODE_SIGN_IDENTITY="$IDENTITY" DEVELOPMENT_TEAM="$TEAM_ID" OTHER_CODE_SIGN_FLAGS=--timestamp \
     | grep -E "error:|warning:|ARCHIVE (SUCCEEDED|FAILED)" || true
   test -d "$WORK/Zeiterfassung.xcarchive"
@@ -95,11 +99,11 @@ else
   # Nur lokal signiert ohne Hardened Runtime: Mit ihr dürfte die App das ebenfalls nur lokal signierte
   # Sparkle nicht laden. Die Hardened Runtime braucht nur die Notarisierung, also die Weitergabe.
   xcodebuild -project Zeiterfassung.xcodeproj -scheme Zeiterfassung -configuration Release \
-    -destination 'generic/platform=macOS' -derivedDataPath build/DerivedData MARKETING_VERSION="$VERSION" \
+    -destination 'generic/platform=macOS' -derivedDataPath "$DERIVED" MARKETING_VERSION="$VERSION" \
     ENABLE_HARDENED_RUNTIME=NO build \
     | grep -E "error:|warning:|BUILD (SUCCEEDED|FAILED)" || true
-  test -d build/DerivedData/Build/Products/Release/Zeiterfassung.app
-  ditto build/DerivedData/Build/Products/Release/Zeiterfassung.app "$APP"
+  test -d "$DERIVED/Build/Products/Release/Zeiterfassung.app"
+  ditto "$DERIVED/Build/Products/Release/Zeiterfassung.app" "$APP"
 fi
 codesign --verify --strict --deep "$APP"
 # Probestart: Lädt die App nicht (etwa weil eine Bibliothek anders signiert ist), bricht das hier ab.

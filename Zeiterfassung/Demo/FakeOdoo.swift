@@ -2,10 +2,9 @@
 // Copyright (C) 2026 Baumgärtner Marketing GmbH
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-// Nur in Entwicklungs-Builds: ein simuliertes Odoo für Unit-Tests und für Bildschirmfotos
-// mit erfundenen Daten. Im Release-Build ist nichts davon enthalten.
+// Ein simuliertes Odoo: für Unit-Tests, für Bildschirmfotos mit erfundenen Daten und für den
+// Demo-Modus, in dem man die App ohne eigenes Odoo ausprobiert.
 
-#if DEBUG
 import Foundation
 
 /// HTTP-Client für Tests: beantwortet Anfragen über eine Funktion und merkt sie sich.
@@ -39,7 +38,10 @@ final class StubHTTPClient: HTTPClient, @unchecked Sendable {
 
     func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
         record(request)
-        let reply = try handler(request)
+        return Self.response(to: request, with: try handler(request))
+    }
+
+    static func response(to request: URLRequest, with reply: Reply) -> (Data, HTTPURLResponse) {
         var headers = reply.headers
         headers["Content-Type"] = reply.contentType
         let response = HTTPURLResponse(url: request.url!, statusCode: reply.status, httpVersion: "HTTP/1.1",
@@ -64,60 +66,9 @@ func requestBody(of request: URLRequest) -> JSONValue? {
     request.httpBody.flatMap { try? JSONDecoder().decode(JSONValue.self, from: $0) }
 }
 
-/// Benutzervorgaben zum Ausprobieren, getrennt von denen der App. Reste früherer Läufe, älter als
-/// eine Stunde, räumt der erste Aufruf weg, damit sich im Container nichts ansammelt.
-enum ScratchDefaults {
-    static func make(_ prefix: String) -> UserDefaults {
-        _ = removeLeftovers
-        return UserDefaults(suiteName: "\(prefix)-\(UUID().uuidString)") ?? .standard
-    }
-
-    private static let prefixes = ["zeiterfassung-tests-", "screenshots-", "selbsttest-", "fensterpruefung-"]
-
-    private static let removeLeftovers: Void = {
-        let folder = URL.libraryDirectory.appending(path: "Preferences")
-        let cutoff = Date().addingTimeInterval(-3600)
-        let files = (try? FileManager.default.contentsOfDirectory(at: folder, includingPropertiesForKeys: [.contentModificationDateKey])) ?? []
-        for file in files where prefixes.contains(where: file.lastPathComponent.hasPrefix) {
-            let modified = (try? file.resourceValues(forKeys: [.contentModificationDateKey]))?.contentModificationDate ?? .distantPast
-            if modified < cutoff { try? FileManager.default.removeItem(at: file) }
-        }
-    }()
-}
-
-/// API-Schlüssel im Arbeitsspeicher statt im Schlüsselbund.
-final class MemorySecretStore: SecretStore, @unchecked Sendable {
-    private let lock = NSLock()
-    private var values: [String: String] = [:]
-
-    func read(account: String) -> String? {
-        lock.lock()
-        defer { lock.unlock() }
-        return values[account]
-    }
-
-    func save(_ secret: String, account: String, label: String) throws {
-        lock.lock()
-        values[account] = secret
-        lock.unlock()
-    }
-
-    func delete(account: String) {
-        lock.lock()
-        values[account] = nil
-        lock.unlock()
-    }
-
-    var count: Int {
-        lock.lock()
-        defer { lock.unlock() }
-        return values.count
-    }
-}
-
 /// Ein kleines Odoo im Arbeitsspeicher. Beantwortet JSON-2 (wie Odoo 19) oder nur JSON-RPC
-/// (wie Odoo 17/18) und hält Projekte, Aufgaben, Zeiteinträge und Anwesenheiten.
-/// Alle Namen sind erfunden.
+/// (wie Odoo 17/18) und hält Projekte, Aufgaben, Zeiteinträge und Anwesenheiten. Dient den Tests,
+/// den Bildschirmfotos und dem Demo-Modus (DemoServer). Alle Namen sind erfunden.
 final class FakeOdoo: @unchecked Sendable {
     enum Mode {
         case odoo19
@@ -141,7 +92,7 @@ final class FakeOdoo: @unchecked Sendable {
 
     private let lock = NSLock()
     var mode: Mode
-    let apiKey = "test-schluessel-123"
+    var apiKey = "test-schluessel-123"
     let login = "erika@example.com"
     var databases = ["demo"]
     var uid = 7
@@ -174,13 +125,15 @@ final class FakeOdoo: @unchecked Sendable {
     private var nextID = 1000
     private var losesResponse = false
     private(set) var log: [String] = []
+    /// Die Tests prüfen anhand des Protokolls, was die App aufgerufen hat; im Demo-Modus würde es nur wachsen.
+    var logsCalls = true
 
     init(mode: Mode = .odoo19) {
         self.mode = mode
     }
 
     func client() -> StubHTTPClient {
-        StubHTTPClient { [self] request in try self.handle(request) }
+        StubHTTPClient { [self] request in try self.reply(to: request) }
     }
 
     func withLock<T>(_ body: () throws -> T) rethrows -> T {
@@ -191,7 +144,7 @@ final class FakeOdoo: @unchecked Sendable {
 
     // MARK: - Anfragen
 
-    private func handle(_ request: URLRequest) throws -> StubHTTPClient.Reply {
+    func reply(to request: URLRequest) throws -> StubHTTPClient.Reply {
         try withLock {
             if offline { throw OdooError.offline("Die Netzwerkverbindung wurde unterbrochen.") }
             let reply = route(request)
@@ -302,7 +255,7 @@ final class FakeOdoo: @unchecked Sendable {
     }
 
     private func dispatch(model: String, method: String, ids: [Int]?, kwargs: [String: JSONValue]) -> Result<JSONValue, Failure> {
-        log.append("\(model).\(method)")
+        if logsCalls { log.append("\(model).\(method)") }
         let domain = kwargs["domain"]?.arrayValue ?? []
         switch (model, method) {
         case ("res.users", "context_get"):
@@ -422,4 +375,3 @@ final class FakeOdoo: @unchecked Sendable {
         ]
     }
 }
-#endif

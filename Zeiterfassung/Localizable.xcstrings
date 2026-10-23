@@ -418,6 +418,22 @@
         }
       }
     },
+    "Angebot vorbereitet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quote prepared"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Devis préparé"
+          }
+        }
+      }
+    },
     "Angemeldet als" : {
       "localizations" : {
         "en" : {
@@ -722,6 +738,22 @@
         }
       }
     },
+    "Beiträge für den nächsten Monat" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Posts for next month"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Publications du mois prochain"
+          }
+        }
+      }
+    },
     "Benutzername" : {
       "localizations" : {
         "en" : {
@@ -978,6 +1010,22 @@
         }
       }
     },
+    "Demo" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Demo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démo"
+          }
+        }
+      }
+    },
     "Der API-Schlüssel konnte nicht im Schlüsselbund gesichert werden (%@)." : {
       "localizations" : {
         "en" : {
@@ -1038,6 +1086,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le serveur redirige vers %@. Veuillez indiquer cette adresse comme serveur."
+          }
+        }
+      }
+    },
+    "Design" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Design"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Design"
           }
         }
       }
@@ -1390,6 +1454,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Obligatoire"
+          }
+        }
+      }
+    },
+    "Erika Mustermann" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Jane Doe"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Marie Dupont"
           }
         }
       }
@@ -1781,6 +1861,22 @@
         }
       }
     },
+    "Interne Arbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Internal work"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Travaux internes"
+          }
+        }
+      }
+    },
     "Jetzt suchen" : {
       "localizations" : {
         "en" : {
@@ -1957,6 +2053,22 @@
         }
       }
     },
+    "Kontaktformular angepasst" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contact form updated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formulaire de contact modifié"
+          }
+        }
+      }
+    },
     "Konto" : {
       "localizations" : {
         "en" : {
@@ -1973,6 +2085,22 @@
         }
       }
     },
+    "Konzept" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concept"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Concept"
+          }
+        }
+      }
+    },
     "Kopieren" : {
       "localizations" : {
         "en" : {
@@ -1985,6 +2113,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Copier"
+          }
+        }
+      }
+    },
+    "Kundenmagazin (Beispiel AG)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Customer magazine (Example Inc.)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Magazine client (Exemple SA)"
+          }
+        }
+      }
+    },
+    "Layout" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Layout"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mise en page"
           }
         }
       }
@@ -2360,6 +2520,38 @@
         }
       }
     },
+    "Online-Shop (Demo KG)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Online shop (Demo LLC)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Boutique en ligne (Démo SAS)"
+          }
+        }
+      }
+    },
+    "Plugin-Updates" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Plugin updates"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Mises à jour des plugins"
+          }
+        }
+      }
+    },
     "Projekt" : {
       "localizations" : {
         "en" : {
@@ -2488,6 +2680,22 @@
         }
       }
     },
+    "Redaktion" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Editorial"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Contenus"
+          }
+        }
+      }
+    },
     "Schließen" : {
       "localizations" : {
         "en" : {
@@ -2520,6 +2728,22 @@
         }
       }
     },
+    "Seitenstruktur abgestimmt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Page structure agreed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arborescence validée"
+          }
+        }
+      }
+    },
     "Server" : {
       "localizations" : {
         "en" : {
@@ -2532,6 +2756,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serveur"
+          }
+        }
+      }
+    },
+    "Social Media (Café Beispiel)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Social media (Sample Café)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réseaux sociaux (Café Exemple)"
           }
         }
       }
@@ -2644,6 +2884,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Réglages Système…"
+          }
+        }
+      }
+    },
+    "Text" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copywriting"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Rédaction"
+          }
+        }
+      }
+    },
+    "Umsetzung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implementation"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Réalisation"
           }
         }
       }
@@ -2776,6 +3048,22 @@
         }
       }
     },
+    "Verwaltung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administration"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Administration"
+          }
+        }
+      }
+    },
     "Von Odoo abmelden?" : {
       "localizations" : {
         "en" : {
@@ -2824,6 +3112,22 @@
         }
       }
     },
+    "Wartung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance"
+          }
+        }
+      }
+    },
     "Was hast du gemacht?" : {
       "localizations" : {
         "en" : {
@@ -2836,6 +3140,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Qu’avez-vous fait ?"
+          }
+        }
+      }
+    },
+    "Website-Betreuung (Muster GmbH)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website support (Sample Ltd)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maintenance du site (Exemple SARL)"
+          }
+        }
+      }
+    },
+    "Website-Relaunch (Musterhaus GmbH)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Website relaunch (Sample House Ltd)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Refonte du site (Maison Exemple SARL)"
+          }
+        }
+      }
+    },
+    "Weiterbildung" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Training"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Formation"
           }
         }
       }

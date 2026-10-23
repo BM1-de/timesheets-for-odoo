@@ -11,9 +11,9 @@ Please do not report security problems in public issues, pull requests or discus
 
 - Preferably use the private vulnerability reporting of GitHub: tab _Security_, _Report a
   vulnerability_ in
-  [BM1-de/zeiterfassung-fuer-odoo](https://github.com/BM1-de/zeiterfassung-fuer-odoo/security).
+  [BM1-de/timesheets-for-odoo](https://github.com/BM1-de/timesheets-for-odoo/security).
 - Or write an e-mail to the maintainer, Phillip Baumgärtner <baumgaertner@bm1.de>, with the
-  subject "Security zeiterfassung-fuer-odoo".
+  subject "Security timesheets-for-odoo".
 
 Describe the problem, the affected version, how to reproduce it and its possible impact. Do not
 send real API keys or personal data; use a test database for the example.

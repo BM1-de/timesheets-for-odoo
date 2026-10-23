@@ -6,7 +6,7 @@
 # Packt die App in ein DMG wie bei Mac-Apps üblich: Das Fenster zeigt die App und den Ordner
 # „Applications“, man zieht die App hinüber.
 #
-#   scripts/make-dmg.sh build/release/Zeiterfassung.app build/release/Zeiterfassung-fuer-Odoo-0.1.0.dmg
+#   scripts/make-dmg.sh build/app.noindex/Zeiterfassung.app build/release/Zeiterfassung-fuer-Odoo-0.1.0.dmg
 #
 # Braucht dmgbuild (MIT-Lizenz): python3 -m pip install dmgbuild==1.6.7
 

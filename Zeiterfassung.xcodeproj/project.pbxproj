@@ -23,11 +23,25 @@
 /* Begin PBXFileReference section */
 		5E1A0C2B7D3F4A1000000006 /* Zeiterfassung.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zeiterfassung.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E1A0C2B7D3F4A1000000007 /* ZeiterfassungTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ZeiterfassungTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5E1A0C2B7D3F4A1000000027 /* Zeiterfassung.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Zeiterfassung.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		5E1A0C2B7D3F4A1000000028 /* Exceptions for "Zeiterfassung" folder in "Zeiterfassung App Store" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				"Resources/Sparkle-LICENSE.txt",
+			);
+			target = 5E1A0C2B7D3F4A1000000020 /* Zeiterfassung App Store */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		5E1A0C2B7D3F4A1000000004 /* Zeiterfassung */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				5E1A0C2B7D3F4A1000000028 /* Exceptions for "Zeiterfassung" folder in "Zeiterfassung App Store" target */,
+			);
 			path = Zeiterfassung;
 			sourceTree = "<group>";
 		};
@@ -59,6 +73,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5E1A0C2B7D3F4A1000000022 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -77,6 +98,7 @@
 			children = (
 				5E1A0C2B7D3F4A1000000006 /* Zeiterfassung.app */,
 				5E1A0C2B7D3F4A1000000007 /* ZeiterfassungTests.xctest */,
+				5E1A0C2B7D3F4A1000000027 /* Zeiterfassung.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -130,6 +152,28 @@
 			productReference = 5E1A0C2B7D3F4A1000000007 /* ZeiterfassungTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		5E1A0C2B7D3F4A1000000020 /* Zeiterfassung App Store */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5E1A0C2B7D3F4A1000000024 /* Build configuration list for PBXNativeTarget "Zeiterfassung App Store" */;
+			buildPhases = (
+				5E1A0C2B7D3F4A1000000021 /* Sources */,
+				5E1A0C2B7D3F4A1000000022 /* Frameworks */,
+				5E1A0C2B7D3F4A1000000023 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				5E1A0C2B7D3F4A1000000004 /* Zeiterfassung */,
+			);
+			name = "Zeiterfassung App Store";
+			packageProductDependencies = (
+			);
+			productName = Zeiterfassung;
+			productReference = 5E1A0C2B7D3F4A1000000027 /* Zeiterfassung.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -147,6 +191,9 @@
 					5E1A0C2B7D3F4A1000000009 = {
 						CreatedOnToolsVersion = 16.0;
 						TestTargetID = 5E1A0C2B7D3F4A1000000008;
+					};
+					5E1A0C2B7D3F4A1000000020 = {
+						CreatedOnToolsVersion = 16.0;
 					};
 				};
 			};
@@ -171,6 +218,7 @@
 			targets = (
 				5E1A0C2B7D3F4A1000000008 /* Zeiterfassung */,
 				5E1A0C2B7D3F4A1000000009 /* ZeiterfassungTests */,
+				5E1A0C2B7D3F4A1000000020 /* Zeiterfassung App Store */,
 			);
 		};
 /* End PBXProject section */
@@ -190,6 +238,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		5E1A0C2B7D3F4A1000000023 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -201,6 +256,13 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5E1A0C2B7D3F4A100000000D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5E1A0C2B7D3F4A1000000021 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -272,6 +334,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -330,6 +393,7 @@
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 0.1.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
@@ -361,11 +425,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.bm1.ZeiterfassungFuerOdoo.debug;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SPARKLE_FEED_URL = "https://github.com/BM1-de/zeiterfassung-fuer-odoo/releases/latest/download/appcast.xml";
+				SPARKLE_FEED_URL = "https://github.com/BM1-de/timesheets-for-odoo/releases/latest/download/appcast.xml";
 				SPARKLE_PUBLIC_KEY = "5xQ7wRSKyJeYYfj9pQLE82sUzXI0h/20rHA84AGyQ9E=";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -395,11 +458,10 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = de.bm1.ZeiterfassungFuerOdoo;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SPARKLE_FEED_URL = "https://github.com/BM1-de/zeiterfassung-fuer-odoo/releases/latest/download/appcast.xml";
+				SPARKLE_FEED_URL = "https://github.com/BM1-de/timesheets-for-odoo/releases/latest/download/appcast.xml";
 				SPARKLE_PUBLIC_KEY = "5xQ7wRSKyJeYYfj9pQLE82sUzXI0h/20rHA84AGyQ9E=";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
@@ -446,6 +508,62 @@
 			};
 			name = Release;
 		};
+		5E1A0C2B7D3F4A1000000025 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Config/Zeiterfassung-AppStore.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Info-AppStore.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Zeiterfassung;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Baumgärtner Marketing GmbH · AGPL-3.0";
+				PRODUCT_BUNDLE_IDENTIFIER = de.bm1.ZeiterfassungFuerOdoo.debug;
+				PRODUCT_NAME = Zeiterfassung;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_STORE $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		5E1A0C2B7D3F4A1000000026 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = "Config/Zeiterfassung-AppStore.entitlements";
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = "$(MARKETING_VERSION)";
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "Config/Info-AppStore.plist";
+				INFOPLIST_KEY_CFBundleDisplayName = Zeiterfassung;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
+				INFOPLIST_KEY_LSUIElement = YES;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "© 2026 Baumgärtner Marketing GmbH · AGPL-3.0";
+				PRODUCT_BUNDLE_IDENTIFIER = de.bm1.ZeiterfassungFuerOdoo;
+				PRODUCT_NAME = Zeiterfassung;
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "APP_STORE $(inherited)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -472,6 +590,15 @@
 			buildConfigurations = (
 				5E1A0C2B7D3F4A1000000019 /* Debug */,
 				5E1A0C2B7D3F4A100000001A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		5E1A0C2B7D3F4A1000000024 /* Build configuration list for PBXNativeTarget "Zeiterfassung App Store" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5E1A0C2B7D3F4A1000000025 /* Debug */,
+				5E1A0C2B7D3F4A1000000026 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
