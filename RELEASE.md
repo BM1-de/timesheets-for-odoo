@@ -23,6 +23,9 @@ and `NOTARY_PASSWORD` (an app-specific password from account.apple.com).
 
 Only the account holder can create a *Developer ID Application* certificate. Keep the `.p12`, its
 password and the Sparkle key in the company password manager; GitHub secrets cannot be read back.
+The project's certificate (Developer ID G2, valid until 2027-11-22) is in the maintainer's login
+keychain; export the `.p12` from Keychain Access. A `.p12` written by OpenSSL 3 or later needs
+`-legacy`, otherwise `security import` rejects it; macOS's own `/usr/bin/openssl` works as is.
 
 ### Sparkle signing key
 
