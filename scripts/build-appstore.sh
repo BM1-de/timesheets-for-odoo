@@ -39,8 +39,9 @@ else
   KEY="$WORK/AuthKey_$ASC_KEY_ID.p8"
   (umask 077; print -rn -- "$ASC_KEY_P8" | base64 -d > "$KEY")
 fi
-auth=(-allowProvisioningUpdates -authenticationKeyPath "$KEY" -authenticationKeyID "$ASC_KEY_ID"
-      -authenticationKeyIssuerID "$ASC_ISSUER_ID")
+# Darf Zertifikate und Profile anlegen und diesen Mac für das Entwicklungsprofil registrieren.
+auth=(-allowProvisioningUpdates -allowProvisioningDeviceRegistration -authenticationKeyPath "$KEY"
+      -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_ISSUER_ID")
 
 xcodebuild archive -project Zeiterfassung.xcodeproj -scheme "Zeiterfassung App Store" -configuration Release \
   -destination 'generic/platform=macOS' -archivePath "$WORK/Zeiterfassung.xcarchive" \
