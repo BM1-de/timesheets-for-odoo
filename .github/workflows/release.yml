@@ -1,0 +1,163 @@
+# Zeiterfassung für Odoo – Release bauen und veröffentlichen
+# Copyright (C) 2026 Baumgärtner Marketing GmbH
+# SPDX-License-Identifier: AGPL-3.0-or-later
+#
+# Ein Tag v<Version> baut die App, signiert sie mit Developer ID, lässt App und DMG von Apple prüfen,
+# signiert das Update für Sparkle und legt den Release mit DMG und appcast.xml an.
+# Von Hand gestartet (Actions › Release › Run workflow) entsteht nur ein Test-DMG als Artefakt;
+# ohne Zertifikat ist es nicht signiert.
+#
+# Variable: APPLE_TEAM_ID
+# Secrets:  MACOS_CERTIFICATE_P12 (Base64), MACOS_CERTIFICATE_PASSWORD,
+#           NOTARY_API_KEY_P8, NOTARY_API_KEY_ID, NOTARY_API_ISSUER_ID
+#           (oder NOTARY_APPLE_ID und NOTARY_PASSWORD), SPARKLE_ED_PRIVATE_KEY
+# Einrichtung: RELEASE.md
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    runs-on: macos-26
+    timeout-minutes: 90
+    env:
+      SPARKLE_VERSION: "2.10.0"
+      SPARKLE_SHA256: "c2bf58aa8387266ac179357b1415d6f2635f044da8be41042af32425dae6da0c"
+      DMGBUILD_VERSION: "1.6.7"
+      IS_RELEASE: ${{ github.ref_type == 'tag' }}
+      TEAM_ID: ${{ vars.APPLE_TEAM_ID }}
+      HAS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE_P12 != '' }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Version bestimmen
+        run: |
+          if [[ "$IS_RELEASE" == "true" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            VERSION=$(xcodebuild -project Zeiterfassung.xcodeproj -target Zeiterfassung -showBuildSettings 2>/dev/null \
+              | awk '$1 == "MARKETING_VERSION" { print $3; exit }')
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          xcodebuild -version
+
+      - name: Für ein Release ist alles hinterlegt
+        if: env.IS_RELEASE == 'true'
+        env:
+          CERT: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          missing=()
+          [[ -n "$TEAM_ID" ]] || missing+=("Variable APPLE_TEAM_ID")
+          [[ -n "$CERT" && -n "$CERT_PASSWORD" ]] || missing+=("MACOS_CERTIFICATE_P12/_PASSWORD")
+          [[ -n "$NOTARY_KEY_P8" || -n "$NOTARY_APPLE_ID" ]] || missing+=("NOTARY_API_KEY_P8 oder NOTARY_APPLE_ID")
+          [[ -n "$SPARKLE_KEY" ]] || missing+=("SPARKLE_ED_PRIVATE_KEY")
+          if (( ${#missing[@]} )); then
+            echo "::error::Für ein Release fehlt: ${missing[*]} (siehe RELEASE.md)"
+            exit 1
+          fi
+          grep -q "^## $VERSION" CHANGELOG.md || { echo "::error::CHANGELOG.md hat keinen Abschnitt „## $VERSION“."; exit 1; }
+
+      - name: Tests
+        run: |
+          xcodebuild test -project Zeiterfassung.xcodeproj -scheme Zeiterfassung -destination 'platform=macOS' \
+            -derivedDataPath build/DerivedData | grep -E "error:|✘|recorded an issue|Test run with|TEST (SUCCEEDED|FAILED)"
+
+      - name: Zertifikat in einen eigenen Schlüsselbund
+        if: env.HAS_CERTIFICATE == 'true'
+        env:
+          CERT: ${{ secrets.MACOS_CERTIFICATE_P12 }}
+          CERT_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+        run: |
+          KEYCHAIN="$RUNNER_TEMP/release.keychain-db"
+          KEYCHAIN_PASSWORD=$(openssl rand -hex 24)
+          echo "$CERT" | base64 --decode > "$RUNNER_TEMP/certificate.p12"
+          curl -fsSL -o "$RUNNER_TEMP/DeveloperIDG2CA.cer" https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer
+          security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security set-keychain-settings -lut 21600 "$KEYCHAIN"
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN"
+          security import "$RUNNER_TEMP/DeveloperIDG2CA.cer" -k "$KEYCHAIN"
+          security import "$RUNNER_TEMP/certificate.p12" -P "$CERT_PASSWORD" -A -t cert -f pkcs12 -k "$KEYCHAIN"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN" >/dev/null
+          security list-keychains -d user -s "$KEYCHAIN" $(security list-keychains -d user | tr -d '"')
+          rm "$RUNNER_TEMP/certificate.p12"
+          security find-identity -v -p codesigning "$KEYCHAIN" | grep -q "Developer ID Application"
+
+      - name: Werkzeuge (dmgbuild, Sparkle)
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet "dmgbuild==$DMGBUILD_VERSION"
+          echo "DMGBUILD=$RUNNER_TEMP/venv/bin/dmgbuild" >> "$GITHUB_ENV"
+          curl -fsSL -o "$RUNNER_TEMP/sparkle.tar.xz" \
+            "https://github.com/sparkle-project/Sparkle/releases/download/$SPARKLE_VERSION/Sparkle-$SPARKLE_VERSION.tar.xz"
+          echo "$SPARKLE_SHA256  $RUNNER_TEMP/sparkle.tar.xz" | shasum -a 256 -c -
+          mkdir "$RUNNER_TEMP/sparkle"
+          tar -xJf "$RUNNER_TEMP/sparkle.tar.xz" -C "$RUNNER_TEMP/sparkle"
+          echo "SPARKLE_BIN=$RUNNER_TEMP/sparkle/bin" >> "$GITHUB_ENV"
+
+      - name: App und DMG bauen, signieren, von Apple prüfen lassen
+        env:
+          NOTARY_KEY_P8: ${{ secrets.NOTARY_API_KEY_P8 }}
+          NOTARY_KEY_ID: ${{ secrets.NOTARY_API_KEY_ID }}
+          NOTARY_ISSUER: ${{ secrets.NOTARY_API_ISSUER_ID }}
+          NOTARY_APPLE_ID: ${{ secrets.NOTARY_APPLE_ID }}
+          NOTARY_PASSWORD: ${{ secrets.NOTARY_PASSWORD }}
+        run: |
+          if [[ "$HAS_CERTIFICATE" != "true" ]]; then
+            unset TEAM_ID NOTARY_KEY_ID NOTARY_ISSUER NOTARY_APPLE_ID NOTARY_PASSWORD
+          elif [[ -n "$NOTARY_KEY_P8" ]]; then
+            printf '%s\n' "$NOTARY_KEY_P8" > "$RUNNER_TEMP/notary.p8"
+            export NOTARY_KEY="$RUNNER_TEMP/notary.p8"
+            unset NOTARY_APPLE_ID
+          fi
+          scripts/build-release.sh
+
+      - name: Versionsliste für Sparkle
+        if: env.IS_RELEASE == 'true'
+        env:
+          SPARKLE_KEY: ${{ secrets.SPARKLE_ED_PRIVATE_KEY }}
+        run: |
+          printf '%s' "$SPARKLE_KEY" | SPARKLE_KEY_FILE=- \
+            scripts/make-appcast.sh "build/release/Zeiterfassung-fuer-Odoo-$VERSION.dmg" "$VERSION"
+          swift scripts/verify-update.swift build/release/Zeiterfassung.app \
+            "build/release/Zeiterfassung-fuer-Odoo-$VERSION.dmg" build/appcast/appcast.xml
+
+      - name: Release anlegen
+        if: env.IS_RELEASE == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          NOTES="build/appcast/Zeiterfassung-fuer-Odoo-$VERSION.md"
+          { cat "$NOTES"; printf '\n%s\n' "Zum Installieren das DMG öffnen und die App auf „Applications“ ziehen. Installierte Versionen aktualisieren sich über „Nach Updates suchen …“. / To install, open the DMG and drag the app onto “Applications”. Installed versions update via “Check for Updates…”."; } > "$RUNNER_TEMP/notes.md"
+          gh release create "$GITHUB_REF_NAME" --title "Zeiterfassung für Odoo $VERSION" --notes-file "$RUNNER_TEMP/notes.md" \
+            "build/release/Zeiterfassung-fuer-Odoo-$VERSION.dmg" build/appcast/appcast.xml
+
+      - name: Test-DMG als Artefakt
+        if: env.IS_RELEASE != 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Zeiterfassung-fuer-Odoo-${{ env.VERSION }}
+          path: build/release/Zeiterfassung-fuer-Odoo-*.dmg
+          retention-days: 14
+
+      - name: Schlüsselbund entfernen
+        if: always() && env.HAS_CERTIFICATE == 'true'
+        run: security delete-keychain "$RUNNER_TEMP/release.keychain-db" || true
