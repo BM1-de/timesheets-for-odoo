@@ -34,13 +34,15 @@ func drawIcon(pixels: Int) -> Data {
     cg.scaleBy(x: scale, y: scale)
 
     // Kachel im macOS-Raster: 824 × 824 auf 1024, Eckradius 185, leichter Schatten.
+    // Schatten folgen der Skalierung des Kontexts nicht, deshalb Versatz und Weichzeichnung mal `scale`;
+    // sonst liegt in den kleinen Größen ein grauer Kasten um die Kachel.
     let tile = NSRect(x: 100, y: 100, width: 824, height: 824)
     let tilePath = NSBezierPath(roundedRect: tile, xRadius: 185, yRadius: 185)
     NSGraphicsContext.saveGraphicsState()
     let shadow = NSShadow()
     shadow.shadowColor = NSColor.black.withAlphaComponent(0.28)
-    shadow.shadowOffset = NSSize(width: 0, height: -10)
-    shadow.shadowBlurRadius = 22
+    shadow.shadowOffset = NSSize(width: 0, height: -10 * scale)
+    shadow.shadowBlurRadius = 22 * scale
     shadow.set()
     color(0x714B67).setFill()
     tilePath.fill()
