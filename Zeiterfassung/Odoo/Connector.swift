@@ -104,10 +104,12 @@ struct Connector {
 }
 
 private extension OdooError {
-    /// Fehler, bei denen der Server JSON-2 offenbar nicht anbietet.
+    /// Fehler, bei denen der Server JSON-2 offenbar nicht anbietet. Odoo 18 kennt den Pfad nicht und
+    /// leitet auf seine Anmeldeseite um; die App folgt dem nicht, sondern fragt per JSON-RPC.
     var meansNoJSON2: Bool {
         switch self {
         case .notFound, .unexpectedResponse, .server, .accessDenied: return true
+        case .redirected(let location): return location.contains("/web/login")
         default: return false
         }
     }

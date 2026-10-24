@@ -19,7 +19,7 @@ struct AppModelTests {
     private func signedIn(_ odoo: FakeOdoo, http: (any HTTPClient)? = nil, clock: MovingClock? = nil) async throws -> AppModel {
         let model = makeModel(odoo, http: http, clock: clock)
         try await model.signIn(server: "odoo.example.de", apiKey: odoo.apiKey,
-                               login: odoo.mode == .odoo17 ? odoo.login : nil, database: nil)
+                               login: odoo.mode == .odoo19 ? nil : odoo.login, database: nil)
         model.finishSignIn()
         await model.refresh(force: true)
         return model
@@ -79,7 +79,7 @@ struct AppModelTests {
         #expect(second.capabilities?.userName == "Erika Mustermann")
     }
 
-    @Test("bucht einen Eintrag: Projekt, Aufgabe, Dauer, Summe", arguments: [FakeOdoo.Mode.odoo19, .odoo17])
+    @Test("bucht einen Eintrag: Projekt, Aufgabe, Dauer, Summe", arguments: [FakeOdoo.Mode.odoo19, .odoo18, .odoo17])
     func booksEntry(mode: FakeOdoo.Mode) async throws {
         let odoo = FakeOdoo(mode: mode)
         let model = try await signedIn(odoo)

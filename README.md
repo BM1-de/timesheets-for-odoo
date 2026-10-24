@@ -19,8 +19,18 @@ Tages steht immer in der Menüleiste.
   französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf Wunsch auf Viertelstunden
   gerundet. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
   sich durchblättern und nachtragen.
+- **Bearbeiten:** Ein Klick auf einen Eintrag öffnet ihn unten im Formular, auch um ihn auf einen
+  anderen Tag zu legen; löschen geht nach einer Rückfrage. Abgerechnete Einträge sperrt Odoo bis
+  auf die Beschreibung, die App zeigt das.
 - **Anwesenheit:** ein- und ausstempeln, die Zeiten und Pausen des Tages und wie viel davon noch
-  nicht auf Projekte gebucht ist.
+  nicht auf Projekte gebucht ist. Mit dem Recht dazu lassen sich Zeiten korrigieren, Pausen
+  verschieben, vergessene Zeiten nachtragen und Zeiträume löschen. Hat Odoo automatisch
+  ausgestempelt, markiert die App die Zeit zum Korrigieren.
+- **Mehrere Firmen:** Die Projektauswahl ordnet die Projekte nach Firma, die Einträge eines Tages
+  stehen je Firma mit Zwischensumme. Odoo bucht jeden Eintrag in der Firma seines Projekts; wer in
+  mehreren Firmen einen Mitarbeiter hat, wählt in den Einstellungen, für welche Firma er stempelt.
+- **Modul „Arbeitszeitgesetz“ (optional):** Ist es in Odoo installiert, erkennt die App die
+  Pausen, die Odoo selbst einfügt, und rechnet beim Verschieben einer Pause vor, ob sie reicht.
 - **Menüleiste:** gebuchte Stunden, Anwesenheit oder beides, mit grünem Punkt, solange man
   eingestempelt ist.
 - **Funktionen einzeln:** Zeiterfassung und Anwesenheit lassen sich getrennt einschalten. Beim
@@ -38,6 +48,7 @@ Tages steht immer in der Menüleiste.
   <img src="docs/screenshots/eintrag.png" width="372" alt="Neuer Eintrag mit Projekt, Aufgabe, Beschreibung und Dauer, die auf eine Viertelstunde gerundet wird">
   <img src="docs/screenshots/projektsuche.png" width="340" alt="Projektauswahl mit Suche und zuletzt verwendeten Projekten">
 </p>
+<img src="docs/screenshots/bearbeiten.png" width="372" alt="Ein Eintrag ist zum Bearbeiten geöffnet: Projekt, Aufgabe, Beschreibung, Dauer und Datum, darunter Löschen, Abbrechen und Sichern">
 
 ## Voraussetzungen
 
@@ -69,11 +80,14 @@ bis zum Beenden der App erhalten und verlässt den Mac nicht.
 
 ## Rechte in Odoo
 
-- **Zeiteinträge:** Das Grundrecht der Zeiterfassung („nur eigene Zeiterfassungen“) genügt.
-- **Stempeln:** Über die Schnittstelle erlaubt Odoo das Anlegen von Anwesenheiten nur mit dem
-  Recht *Sachbearbeiter: Alle Anwesenheiten verwalten* oder als Administrator, außerdem wenn man
-  beim eigenen Mitarbeiter als *Anwesenheitsgenehmiger* eingetragen ist. Ohne dieses Recht zeigt
-  die App die Anwesenheit nur an und weist darauf hin; gestempelt wird dann weiter in Odoo.
+- **Zeiteinträge:** Das Grundrecht der Zeiterfassung („nur eigene Zeiterfassungen“) genügt, auch
+  zum Ändern und Löschen der eigenen Einträge. Abgerechnete Einträge sperrt Odoo bis auf die
+  Beschreibung, freigegebene (Odoo Enterprise) ganz.
+- **Stempeln und Korrigieren:** Über die Schnittstelle erlaubt Odoo das Anlegen und Ändern von
+  Anwesenheiten nur mit dem Recht *Sachbearbeiter: Alle Anwesenheiten verwalten* oder als
+  Administrator, außerdem wenn man beim eigenen Mitarbeiter als *Anwesenheitsgenehmiger*
+  eingetragen ist. Ohne dieses Recht zeigt die App die Anwesenheit nur an und weist darauf hin;
+  gestempelt wird dann weiter in Odoo, Korrekturen trägt die zuständige Person ein.
 - Wer nur die Anwesenheiten anderer genehmigt, hat in Odoo das Recht *Sachbearbeiter:
   Anwesenheiten verwalten*, darf aber nicht für sich selbst stempeln. Das zeigt Odoo erst beim
   Versuch; die App blendet das Stempeln dann aus. Nach einer Änderung der Rechte in den
@@ -88,8 +102,8 @@ bis zum Beenden der App erhalten und verlässt den Mac nicht.
   (`/jsonrpc`) mit Benutzername und API-Schlüssel. Odoo hat sie mit Version 19 abgekündigt und
   will sie mit Odoo 22 entfernen.
 - Alle Aufrufe laufen mit den Rechten des angemeldeten Benutzers. Gelesen werden der eigene
-  Benutzer, Projekte, Aufgaben, die eigenen Zeiteinträge und Anwesenheiten; geschrieben werden nur
-  neue Zeiteinträge und die eigenen Anwesenheiten.
+  Benutzer mit seinen Firmen und Mitarbeitern, Projekte, Aufgaben, die eigenen Zeiteinträge und
+  Anwesenheiten; geschrieben werden nur die eigenen Zeiteinträge und Anwesenheiten.
 - Der API-Schlüssel liegt im Schlüsselbund, die übrigen Einstellungen in den Benutzervorgaben der
   App. Die App verbindet sich nur mit dem eigenen Odoo, sammelt keine Nutzungsdaten und läuft in
   der Sandbox von macOS.
@@ -161,11 +175,12 @@ braucht einen API-Schlüssel von App Store Connect (Hinweise im Skript).
 - Tests: `xcodebuild test -project Zeiterfassung.xcodeproj -scheme Zeiterfassung -destination 'platform=macOS'`.
   Sie laufen gegen ein simuliertes Odoo im Arbeitsspeicher.
 - Test-Odoo: `dev/start-test-odoo.sh` startet mit Docker ein Odoo 19 mit Demodaten auf
-  `http://localhost:8079` und legt API-Schlüssel für drei Benutzer an (in `dev/.env`): einen
-  Administrator, eine Mitarbeiterin ohne Sonderrechte und einen Sachbearbeiter, dem Odoo das
-  eigene Stempeln verweigert. Die Tests in `LiveOdooTests.swift` laufen dagegen, wenn die
-  Variablen `TEST_RUNNER_ZEITERFASSUNG_LIVE_*` gesetzt sind; nie gegen eine Datenbank mit
-  echten Daten.
+  `http://localhost:8079` und legt API-Schlüssel für vier Benutzer an (in `dev/.env`): einen
+  Administrator, eine Mitarbeiterin ohne Sonderrechte, einen Sachbearbeiter, dem Odoo das
+  eigene Stempeln verweigert, und eine Benutzerin mit Mitarbeitern in zwei Firmen. Die Tests in
+  `LiveOdooTests.swift` laufen dagegen, wenn die Variablen `TEST_RUNNER_ZEITERFASSUNG_LIVE_*`
+  gesetzt sind (`…_LIVE_MULTI_KEY` für die zwei Firmen); nie gegen eine Datenbank mit echten
+  Daten.
 - Zwei App-Ziele teilen sich den Code: *Zeiterfassung* (DMG, mit Sparkle) und *Zeiterfassung App
   Store* (ohne Sparkle, Bedingung `APP_STORE`). Gebaute Apps landen in Ordnern mit der Endung
   `.noindex`, damit Spotlight sie nicht neben der installierten App anzeigt.
@@ -192,7 +207,6 @@ braucht einen API-Schlüssel von App Store Connect (Hinweise im Skript).
 
 ## Grenzen
 
-- Vorhandene Einträge bearbeitet oder löscht man weiter in Odoo.
 - Keine Stoppuhr; Zeiten werden nachgetragen.
 - Sprachen: Deutsch, Englisch, Französisch. Steht keine davon in der Sprachliste des Mac,
   erscheint die App auf Deutsch.

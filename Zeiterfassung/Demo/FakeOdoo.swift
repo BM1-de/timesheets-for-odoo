@@ -72,7 +72,17 @@ func requestBody(of request: URLRequest) -> JSONValue? {
 final class FakeOdoo: @unchecked Sendable {
     enum Mode {
         case odoo19
+        /// Ohne JSON-2: Odoo 18 leitet `/json/…` auf seine Anmeldeseite um.
+        case odoo18
         case odoo17
+
+        var major: Int {
+            switch self {
+            case .odoo19: 19
+            case .odoo18: 18
+            case .odoo17: 17
+            }
+        }
     }
 
     struct Line {
@@ -82,12 +92,21 @@ final class FakeOdoo: @unchecked Sendable {
         var projectID: Int
         var taskID: Int?
         var hours: Double
+        /// Ohne Angabe die Hauptfirma und der Mitarbeiter darin.
+        var companyID: Int?
+        var employeeID: Int?
+        /// Abgerechnet: Dauer, Datum, Projekt und Aufgabe stehen fest, löschen geht nicht.
+        var invoiced = false
     }
 
     struct Attendance {
         var id: Int
         var checkIn: String
         var checkOut: String?
+        var inMode: String?
+        var outMode: String?
+        /// Ohne Angabe der Mitarbeiter der Hauptfirma.
+        var employeeID: Int?
     }
 
     private let lock = NSLock()
@@ -108,6 +127,16 @@ final class FakeOdoo: @unchecked Sendable {
     /// Legt den nächsten Zeiteintrag an, aber die Antwort geht unterwegs verloren.
     var loseNextCreateResponse = false
     var failAttendanceRead = false
+    var failNextWrite = false
+    /// Firmen, die der Benutzer sehen darf; die erste ist seine Hauptfirma.
+    var companies: [(id: Int, name: String)] = [(1, "Muster Agentur GmbH")]
+    /// Mitarbeiter des Benutzers in weiteren Firmen; `employeeID` ist der in der Hauptfirma.
+    var otherEmployees: [(id: Int, companyID: Int)] = []
+    /// Firma je Projekt; Projekte ohne Eintrag gehören allen Firmen.
+    var projectCompanies: [Int: Int] = [:]
+    /// Wie das Modul Arbeitszeitgesetz: Fehlt Pause, fügt Odoo sie beim Sichern ein.
+    var breakModule = false
+    var breakRules = BreakRules()
     var projects: [(id: Int, name: String)] = [
         (1, "Interne Arbeiten"),
         (2, "Website-Betreuung (Muster GmbH)"),
@@ -120,6 +149,8 @@ final class FakeOdoo: @unchecked Sendable {
         3: [(31, "Text"), (32, "Layout")],
         4: [],
     ]
+    /// Erledigte Aufgaben: Sie stehen nicht mehr zur Auswahl, aber noch in alten Einträgen.
+    var closedTasks: [Int: String] = [:]
     var lines: [Line] = []
     var attendances: [Attendance] = []
     private var nextID = 1000
@@ -158,6 +189,10 @@ final class FakeOdoo: @unchecked Sendable {
 
     private func route(_ request: URLRequest) -> StubHTTPClient.Reply {
         let path = request.url?.path() ?? ""
+        if mode == .odoo18, path.hasPrefix("/json/") {
+            let target = path.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? ""
+            return StubHTTPClient.redirect(to: "/web/login?redirect=\(target)", status: 303)
+        }
         if path == "/json/version" {
             return mode == .odoo19
                 ? StubHTTPClient.json(["version_info": [19, 0, 0, "final", 0, ""], "version": "19.0"])
@@ -211,7 +246,8 @@ final class FakeOdoo: @unchecked Sendable {
         }
         switch (service, method) {
         case ("common", "version"):
-            return result(["server_version": "17.0", "server_version_info": [17, 0, 0, "final", 0, ""]])
+            return result(["server_version": .string("\(mode.major).0"),
+                           "server_version_info": [.int(mode.major), 0, 0, "final", 0, ""]])
         case ("db", "list"):
             return databases.count == 1 ? result(.array(databases.map(JSONValue.string)))
                 : error("odoo.exceptions.AccessDenied", "Access Denied")
@@ -229,12 +265,16 @@ final class FakeOdoo: @unchecked Sendable {
             var kwargs = args[6].objectValue ?? [:]
             kwargs["context"] = nil
             var ids: [Int]?
-            if ["read", "write", "has_access"].contains(objectMethod), !positional.isEmpty {
+            if ["read", "write", "unlink", "has_access"].contains(objectMethod), !positional.isEmpty {
                 ids = positional.removeFirst().arrayValue?.compactMap(\.intValue)
             }
             if objectMethod == "create" {
                 guard let valsList = positional.first else { return error("builtins.IndexError", "tuple index out of range") }
                 kwargs["vals_list"] = valsList
+            }
+            // Bis Odoo 18 heißt der Parameter von `write` bei Zeiteinträgen `values`; nur als Position passt er.
+            if objectMethod == "write", model == "account.analytic.line", mode != .odoo19, kwargs["vals"] != nil {
+                return error("builtins.TypeError", "AccountAnalyticLine.write() got an unexpected keyword argument 'vals'")
             }
             if objectMethod == "write", let vals = positional.first { kwargs["vals"] = vals }
             switch dispatch(model: model, method: objectMethod, ids: ids, kwargs: kwargs) {
@@ -261,7 +301,10 @@ final class FakeOdoo: @unchecked Sendable {
         case ("res.users", "context_get"):
             return .success(["lang": "de_DE", "tz": "Europe/Berlin", "uid": .int(uid)])
         case ("res.users", "read"):
-            var record: [String: JSONValue] = ["id": .int(uid), "name": .string(userName)]
+            var record: [String: JSONValue] = ["id": .int(uid), "name": .string(userName),
+                                               "company_id": companyReference(mainCompanyID),
+                                               "company_ids": .array(companies.map { .int($0.id) })]
+            // Wie Odoo: `employee_ids` nennt nur den Mitarbeiter der Hauptfirma.
             if let employeeID {
                 record["employee_id"] = [.int(employeeID), .string(userName)]
                 record["employee_ids"] = [.int(employeeID)]
@@ -270,27 +313,51 @@ final class FakeOdoo: @unchecked Sendable {
                 record["employee_ids"] = []
             }
             return .success([.object(record)])
+        case ("res.company", "read"):
+            let wanted = ids ?? []
+            return .success(.array(companies.filter { wanted.contains($0.id) }.map { company in
+                var record: [String: JSONValue] = ["id": .int(company.id), "name": .string(company.name)]
+                if breakModule {
+                    record["arbzg_break_hours_1"] = .number(Double(breakRules.firstThreshold) / 60)
+                    record["arbzg_break_minutes_1"] = .int(breakRules.firstBreak)
+                    record["arbzg_break_hours_2"] = .number(Double(breakRules.secondThreshold) / 60)
+                    record["arbzg_break_minutes_2"] = .int(breakRules.secondBreak)
+                    record["arbzg_min_break_minutes"] = .int(breakRules.minimumGap)
+                    record["arbzg_max_hours"] = .number(Double(breakRules.maximumWork) / 60)
+                }
+                return .object(record)
+            }))
+        case ("hr.employee", "search_read"):
+            return .success(.array(allEmployees.map { ["id": .int($0.id), "company_id": companyReference($0.companyID)] }))
         case ("account.analytic.line", "fields_get"):
-            return .success(["project_id": ["type": "many2one"], "task_id": ["type": "many2one"], "unit_amount": ["type": "float"]])
+            return .success(["project_id": ["type": "many2one"], "task_id": ["type": "many2one"], "unit_amount": ["type": "float"],
+                             "company_id": ["type": "many2one"], "employee_id": ["type": "many2one"],
+                             "timesheet_invoice_id": ["type": "many2one"]])
         case ("project.project", "fields_get"):
-            return .success(mode == .odoo19 ? ["allow_timesheets": ["type": "boolean"], "is_template": ["type": "boolean"]]
+            return .success(mode != .odoo17 ? ["allow_timesheets": ["type": "boolean"], "is_template": ["type": "boolean"]]
                                             : ["allow_timesheets": ["type": "boolean"]])
         case ("project.task", "fields_get"):
             return .success(["is_closed": ["type": "boolean"]])
         case ("hr.attendance", "fields_get"):
             // Fehlt die App, meldet JSON-2 „nicht gefunden“, JSON-RPC einen UserError (wie Odoo 17 bis 19).
+            var fields: [String: JSONValue] = ["check_in": ["type": "datetime"], "check_out": ["type": "datetime"],
+                                               "in_mode": ["type": "selection"], "out_mode": ["type": "selection"]]
+            if breakModule { fields["arbzg_missing_break"] = ["type": "float"] }
             return attendanceInstalled
-                ? .success(["check_in": ["type": "datetime"], "check_out": ["type": "datetime"]])
+                ? .success(.object(fields))
                 : mode == .odoo19
                     ? .failure(Failure(name: "werkzeug.exceptions.NotFound", message: "the model 'hr.attendance' does not exist", status: 404))
                     : .failure(Failure(name: "odoo.exceptions.UserError", message: "Object hr.attendance doesn't exist", status: 200))
         case ("hr.attendance", "has_access"):
-            return mode == .odoo19 ? .success(.bool(canStamp))
+            return mode != .odoo17 ? .success(.bool(canStamp))
                 : .failure(Failure(name: "builtins.AttributeError", message: "has_access", status: 404))
         case ("hr.attendance", "check_access_rights"):
             return .success(.bool(canStamp))
         case ("project.project", "search_read"):
-            return .success(.array(projects.map { ["id": .int($0.id), "display_name": .string($0.name)] }))
+            return .success(.array(projects.map { project in
+                ["id": .int(project.id), "display_name": .string(project.name),
+                 "company_id": projectCompanies[project.id].map(companyReference) ?? false]
+            }))
         case ("project.task", "search_read"):
             let projectID = condition(domain, "project_id", "=")?.intValue ?? 0
             return .success(.array((tasks[projectID] ?? []).map { ["id": .int($0.id), "name": .string($0.name)] }))
@@ -307,20 +374,63 @@ final class FakeOdoo: @unchecked Sendable {
             guard let vals = kwargs["vals_list"]?.arrayValue?.first else {
                 return .failure(Failure(name: "builtins.TypeError", message: "vals_list fehlt", status: 422))
             }
+            // Wie Odoo: die Firma des Projekts und der Mitarbeiter darin; mit nur einem Mitarbeiter dieser.
+            let projectID = vals["project_id"]?.intValue ?? 0
+            let projectCompany = projectCompanies[projectID]
+            let employees = allEmployees
+            guard let employee = employees.count == 1 ? employees.first
+                    : employees.first(where: { $0.companyID == (projectCompany ?? mainCompanyID) }) else {
+                return .failure(Failure(name: "odoo.exceptions.ValidationError",
+                                        message: "Timesheets must be created with an active employee in the selected companies.",
+                                        status: 422))
+            }
             nextID += 1
             lines.append(Line(id: nextID, date: vals["date"]?.stringValue ?? "", name: vals["name"]?.stringValue ?? "",
-                              projectID: vals["project_id"]?.intValue ?? 0, taskID: vals["task_id"]?.intValue,
-                              hours: vals["unit_amount"]?.doubleValue ?? 0))
+                              projectID: projectID, taskID: vals["task_id"]?.intValue,
+                              hours: vals["unit_amount"]?.doubleValue ?? 0,
+                              companyID: projectCompany ?? employee.companyID, employeeID: employee.id))
             if loseNextCreateResponse {
                 loseNextCreateResponse = false
                 losesResponse = true
             }
             return .success([.int(nextID)])
+        case ("account.analytic.line", "write"):
+            if let failure = takeWriteFailure() { return .failure(failure) }
+            guard let id = ids?.first, let index = lines.firstIndex(where: { $0.id == id }) else {
+                return .failure(Failure(name: "odoo.exceptions.MissingError", message: "Datensatz fehlt", status: 422))
+            }
+            let vals = kwargs["vals"]?.objectValue ?? [:]
+            if lines[index].invoiced, vals.keys.contains(where: ["unit_amount", "employee_id", "project_id", "task_id", "date"].contains) {
+                return .failure(Failure(name: "odoo.exceptions.UserError",
+                                        message: "You cannot modify timesheets that are already invoiced.", status: 422))
+            }
+            if let name = vals["name"]?.stringValue { lines[index].name = name }
+            // Wie Odoo: Das Projekt bringt seine Firma mit, der Mitarbeiter bleibt, wenn er nicht mitkommt.
+            if let projectID = vals["project_id"]?.intValue {
+                lines[index].projectID = projectID
+                if let companyID = projectCompanies[projectID] { lines[index].companyID = companyID }
+            }
+            if let task = vals["task_id"] { lines[index].taskID = task.intValue }
+            if let hours = vals["unit_amount"]?.doubleValue { lines[index].hours = hours }
+            if let date = vals["date"]?.stringValue { lines[index].date = date }
+            if let employeeID = vals["employee_id"]?.intValue { lines[index].employeeID = employeeID }
+            return .success(true)
+        case ("account.analytic.line", "unlink"):
+            let wanted = ids ?? []
+            if lines.contains(where: { wanted.contains($0.id) && $0.invoiced }) {
+                return .failure(Failure(name: "odoo.exceptions.UserError",
+                                        message: "You cannot remove a timesheet that has already been invoiced.", status: 422))
+            }
+            lines.removeAll { wanted.contains($0.id) }
+            return .success(true)
         case ("hr.attendance", "search_read"):
             guard !failAttendanceRead else {
                 return .failure(Failure(name: "odoo.exceptions.AccessError", message: "Kein Zugriff auf Anwesenheiten", status: 403))
             }
             var result = attendances
+            if let employee = condition(domain, "employee_id", "=")?.intValue {
+                result = result.filter { owner(of: $0) == employee }
+            }
             if domain.contains(where: { $0.arrayValue?.first?.stringValue == "check_out" }) {
                 result = result.filter { $0.checkOut == nil }
             }
@@ -328,9 +438,11 @@ final class FakeOdoo: @unchecked Sendable {
                let to = condition(domain, "check_in", "<")?.stringValue {
                 result = result.filter { $0.checkIn >= from && $0.checkIn < to }
             }
-            return .success(.array(result.map { record in
+            return .success(.array(result.sorted { $0.checkIn < $1.checkIn }.map { record in
                 ["id": .int(record.id), "check_in": .string(record.checkIn),
-                 "check_out": record.checkOut.map(JSONValue.string) ?? false]
+                 "check_out": record.checkOut.map(JSONValue.string) ?? false,
+                 "in_mode": record.inMode.map(JSONValue.string) ?? false,
+                 "out_mode": record.outMode.map(JSONValue.string) ?? false]
             }))
         case ("hr.attendance", "create"):
             guard canStamp, !stampDeniedByRule else {
@@ -339,14 +451,40 @@ final class FakeOdoo: @unchecked Sendable {
             guard let vals = kwargs["vals_list"]?.arrayValue?.first else {
                 return .failure(Failure(name: "builtins.TypeError", message: "vals_list fehlt", status: 422))
             }
+            let employee = vals["employee_id"]?.intValue
+            let record = Attendance(id: nextID + 1, checkIn: vals["check_in"]?.stringValue ?? "",
+                                    checkOut: vals["check_out"]?.stringValue, inMode: "manual",
+                                    outMode: vals["check_out"]?.stringValue == nil ? nil : "manual",
+                                    employeeID: employee == employeeID ? nil : employee)
+            if let failure = attendanceProblem(record) { return .failure(failure) }
             nextID += 1
-            attendances.append(Attendance(id: nextID, checkIn: vals["check_in"]?.stringValue ?? "", checkOut: nil))
+            attendances.append(record)
+            insertMissingBreak(after: record)
             return .success([.int(nextID)])
         case ("hr.attendance", "write"):
+            guard canStamp, !stampDeniedByRule else {
+                return .failure(Failure(name: "odoo.exceptions.AccessError", message: "Keine Berechtigung", status: 403))
+            }
+            if let failure = takeWriteFailure() { return .failure(failure) }
             guard let id = ids?.first, let index = attendances.firstIndex(where: { $0.id == id }) else {
                 return .failure(Failure(name: "odoo.exceptions.MissingError", message: "Datensatz fehlt", status: 422))
             }
-            attendances[index].checkOut = kwargs["vals"]?["check_out"]?.stringValue
+            let vals = kwargs["vals"]?.objectValue ?? [:]
+            var record = attendances[index]
+            if let checkIn = vals["check_in"]?.stringValue { record.checkIn = checkIn }
+            if vals.keys.contains("check_out") { record.checkOut = vals["check_out"]?.stringValue }
+            if let mode = vals["in_mode"]?.stringValue { record.inMode = mode }
+            if let mode = vals["out_mode"]?.stringValue { record.outMode = mode }
+            if let failure = attendanceProblem(record) { return .failure(failure) }
+            attendances[index] = record
+            insertMissingBreak(after: record)
+            return .success(true)
+        case ("hr.attendance", "unlink"):
+            guard canStamp, !stampDeniedByRule else {
+                return .failure(Failure(name: "odoo.exceptions.AccessError", message: "Keine Berechtigung", status: 403))
+            }
+            let wanted = ids ?? []
+            attendances.removeAll { wanted.contains($0.id) }
             return .success(true)
         default:
             return .failure(Failure(name: "werkzeug.exceptions.NotFound", message: "\(model).\(method) gibt es nicht", status: 404))
@@ -364,7 +502,9 @@ final class FakeOdoo: @unchecked Sendable {
 
     private func lineRecord(_ line: Line) -> JSONValue {
         let projectName = projects.first { $0.id == line.projectID }?.name ?? ""
-        let taskName = tasks[line.projectID]?.first { $0.id == line.taskID }?.name ?? ""
+        let taskName = tasks[line.projectID]?.first { $0.id == line.taskID }?.name
+            ?? line.taskID.flatMap { closedTasks[$0] } ?? ""
+        let employee = line.employeeID ?? employeeID
         return [
             "id": .int(line.id),
             "name": .string(line.name),
@@ -372,6 +512,79 @@ final class FakeOdoo: @unchecked Sendable {
             "project_id": [.int(line.projectID), .string(projectName)],
             "task_id": line.taskID.map { [.int($0), .string(taskName)] } ?? false,
             "unit_amount": .number(line.hours),
+            "company_id": companyReference(line.companyID ?? mainCompanyID),
+            "employee_id": employee.map { [.int($0), .string(userName)] } ?? false,
+            "timesheet_invoice_id": line.invoiced ? [.int(9001), "RE/2026/0042"] : false,
         ]
+    }
+
+    // MARK: - Firmen und Mitarbeiter
+
+    private var mainCompanyID: Int { companies.first?.id ?? 1 }
+
+    private func companyReference(_ id: Int) -> JSONValue {
+        [.int(id), .string(companies.first { $0.id == id }?.name ?? "Firma \(id)")]
+    }
+
+    /// Alle Mitarbeiter des Benutzers, der der Hauptfirma zuerst.
+    private var allEmployees: [(id: Int, companyID: Int)] {
+        (employeeID.map { [(id: $0, companyID: mainCompanyID)] } ?? []) + otherEmployees
+    }
+
+    private func owner(of attendance: Attendance) -> Int? {
+        attendance.employeeID ?? employeeID
+    }
+
+    private func takeWriteFailure() -> Failure? {
+        guard failNextWrite else { return nil }
+        failNextWrite = false
+        return Failure(name: "werkzeug.exceptions.ServiceUnavailable", message: "Wartung", status: 503)
+    }
+
+    // MARK: - Anwesenheiten prüfen wie Odoo
+
+    /// Ende vor Beginn oder Überschneidung mit einer anderen Anwesenheit desselben Mitarbeiters.
+    private func attendanceProblem(_ record: Attendance) -> Failure? {
+        if let checkOut = record.checkOut, checkOut < record.checkIn {
+            return Failure(name: "odoo.exceptions.ValidationError",
+                           message: "\"Check Out\" time cannot be earlier than \"Check In\" time.", status: 422)
+        }
+        let end = record.checkOut ?? "9999-12-31 23:59:59"
+        let clash = attendances.first { other in
+            other.id != record.id && owner(of: other) == owner(of: record)
+                && record.checkIn < (other.checkOut ?? "9999-12-31 23:59:59") && end > other.checkIn
+        }
+        guard let clash else { return nil }
+        return Failure(name: "odoo.exceptions.ValidationError",
+                       message: "Cannot create new attendance record for \(userName), the employee was already checked in on \(clash.checkIn)",
+                       status: 422)
+    }
+
+    /// Wie das Modul Arbeitszeitgesetz: Fehlt an einem Tag Pause, teilt Odoo die längste Anwesenheit
+    /// und legt die Pause in ihre Mitte; der zweite Teil ist „technical“ angelegt.
+    private func insertMissingBreak(after changed: Attendance) {
+        guard breakModule else { return }
+        let day = String(changed.checkIn.prefix(10))
+        let list = attendances.filter { owner(of: $0) == owner(of: changed) && $0.checkIn.hasPrefix(day) }
+            .sorted { $0.checkIn < $1.checkIn }
+        guard !list.isEmpty, list.allSatisfy({ $0.checkOut != nil }) else { return }
+        func date(_ text: String?) -> Date { text.flatMap(OdooDateTime.date(from:)) ?? .distantPast }
+        func minutes(_ item: Attendance) -> Int { Int(date(item.checkOut).timeIntervalSince(date(item.checkIn)) / 60) }
+        let work = list.reduce(0) { $0 + minutes($1) }
+        var breaks = 0
+        for (before, after) in zip(list, list.dropFirst()) {
+            let gap = Int(date(after.checkIn).timeIntervalSince(date(before.checkOut)) / 60)
+            if gap >= breakRules.minimumGap || after.inMode == "technical" { breaks += max(0, gap) }
+        }
+        let missing = breakRules.missingBreak(work: work, breaks: breaks).missing
+        guard missing > 0, let longest = list.max(by: { minutes($0) < minutes($1) }), minutes(longest) > missing + 2,
+              let index = attendances.firstIndex(where: { $0.id == longest.id }) else { return }
+        let start = date(longest.checkIn).addingTimeInterval(TimeInterval((minutes(longest) - missing) / 2 * 60))
+        let end = start.addingTimeInterval(TimeInterval(missing * 60))
+        let originalCheckOut = attendances[index].checkOut
+        attendances[index].checkOut = OdooDateTime.string(from: start)
+        nextID += 1
+        attendances.append(Attendance(id: nextID, checkIn: OdooDateTime.string(from: end), checkOut: originalCheckOut,
+                                      inMode: "technical", outMode: longest.outMode, employeeID: longest.employeeID))
     }
 }

@@ -16,7 +16,7 @@ struct OdooServiceTests {
         return OdooService(transport: transport, uid: odoo.uid)
     }
 
-    @Test("erkennt beide Funktionen und das Recht zu stempeln", arguments: [FakeOdoo.Mode.odoo19, .odoo17])
+    @Test("erkennt beide Funktionen und das Recht zu stempeln", arguments: [FakeOdoo.Mode.odoo19, .odoo18, .odoo17])
     func discoversEverything(mode: FakeOdoo.Mode) async throws {
         let odoo = FakeOdoo(mode: mode)
         let found = try await service(odoo).discoverCapabilities()
@@ -26,10 +26,10 @@ struct OdooServiceTests {
         #expect(found.canStamp)
         #expect(found.employeeID == 3)
         #expect(found.schema.taskHasIsClosed)
-        #expect(found.schema.projectHasTemplates == (mode == .odoo19))
+        #expect(found.schema.projectHasTemplates == (mode != .odoo17))
     }
 
-    @Test("ohne Odoo-App Anwesenheiten", arguments: [FakeOdoo.Mode.odoo19, .odoo17])
+    @Test("ohne Odoo-App Anwesenheiten", arguments: [FakeOdoo.Mode.odoo19, .odoo18, .odoo17])
     func attendanceMissing(mode: FakeOdoo.Mode) async throws {
         let odoo = FakeOdoo(mode: mode)
         odoo.attendanceInstalled = false
@@ -54,7 +54,7 @@ struct OdooServiceTests {
         #expect(!found.canStamp)
     }
 
-    @Test("legt einen Zeiteintrag an und liest ihn wieder", arguments: [FakeOdoo.Mode.odoo19, .odoo17])
+    @Test("legt einen Zeiteintrag an und liest ihn wieder", arguments: [FakeOdoo.Mode.odoo19, .odoo18, .odoo17])
     func createsAndReadsTimesheet(mode: FakeOdoo.Mode) async throws {
         let odoo = FakeOdoo(mode: mode)
         let service = service(odoo)
@@ -87,7 +87,7 @@ struct OdooServiceTests {
         #expect(try await service.timesheets(on: day).first?.description == "")
     }
 
-    @Test("stempelt ein und aus", arguments: [FakeOdoo.Mode.odoo19, .odoo17])
+    @Test("stempelt ein und aus", arguments: [FakeOdoo.Mode.odoo19, .odoo18, .odoo17])
     func stamps(mode: FakeOdoo.Mode) async throws {
         let odoo = FakeOdoo(mode: mode)
         let service = service(odoo)
@@ -103,6 +103,31 @@ struct OdooServiceTests {
                                                   calendar: TestClock.calendar)
         #expect(today.count == 1)
         #expect(today[0].minutes(until: TestClock.now) == 60)
+    }
+
+    @Test("Odoos eigene Einträge von einer Sekunde zählen nicht als Anwesenheit")
+    func skipsTechnicalEntries() async throws {
+        let odoo = FakeOdoo()
+        odoo.withLock {
+            odoo.attendances = [
+                .init(id: 1, checkIn: "2026-10-23 06:00:00", checkOut: "2026-10-23 06:00:01", inMode: "technical", outMode: "technical"),
+                .init(id: 2, checkIn: "2026-10-23 07:00:00", checkOut: "2026-10-23 11:00:00", inMode: "technical", outMode: "manual"),
+            ]
+        }
+        let periods = try await service(odoo).attendances(on: CalendarDay(year: 2026, month: 10, day: 23),
+                                                          calendar: TestClock.calendar)
+        #expect(periods.map(\.id) == [2])
+        #expect(periods.first?.isTechnical == true)
+    }
+
+    @Test("gemerkte Funktionen der Version 0.1.0 lassen sich weiter lesen")
+    func decodesOldCapabilities() throws {
+        let json = #"{"userName":"Erika","timesheets":"available","attendance":"available","canStamp":true,"employeeID":3,"schema":{"projectHasTemplates":true,"taskHasIsClosed":true}}"#
+        let capabilities = try JSONDecoder().decode(Capabilities.self, from: Data(json.utf8))
+        #expect(capabilities.schema.projectHasTemplates)
+        #expect(!capabilities.schema.lineHasInvoice)
+        #expect(capabilities.schema.breakRules == nil)
+        #expect(capabilities.organization == nil)
     }
 
     @Test("Projekte, Aufgaben und zuletzt verwendete")

@@ -3,6 +3,24 @@
 ## Unreleased
 
 - New app icon in Odoo's purple: a stopwatch whose teal segment shows the booked time.
+- Edit entries: a click opens an entry in the form below, including its date; delete after a
+  confirmation inside the window. Invoiced entries keep everything but the description, as in
+  Odoo; validated ones (Odoo Enterprise) are read-only. Closed tasks and archived projects of an
+  entry stay as they are.
+- Correct attendance: change start and end, move a break, add a forgotten period, delete one,
+  with the same checks as Odoo (order, overlaps, nothing in the future). Periods that Odoo ended
+  automatically are marked for correcting. Needs the same right as checking in.
+- Several companies in one database: projects grouped by company, a day's entries with
+  subtotals per company, the booking company shown in the form. When a project moves an entry to
+  another company, the app switches it to the user's employee there, as Odoo does when creating.
+  Users with employees in several companies choose in the settings where they check in.
+- Optional module “Arbeitszeitgesetz”: the app recognises breaks inserted by Odoo, explains
+  whether a moved break is long enough and reports what Odoo added after saving.
+- Fixed: signing in to Odoo 18 failed with a redirect notice. Odoo 18 answers the JSON-2 probe
+  with a redirect to its login page; the app now takes that as “no JSON-2” and continues with
+  JSON-RPC, still without following the redirect.
+- Changes are sent to Odoo 17 and 18 with the values as a positional argument, because some
+  models there name the parameter of `write` differently.
 
 ## 0.1.0 – 2026-10-23
 

@@ -64,6 +64,8 @@ enum ScreenshotRenderer {
             .background(Color(nsColor: .windowBackgroundColor))
         await render(picker, appearance: .aqua, to: directory.appending(path: "projektsuche.png"))
 
+        await renderEditing(model, to: directory)
+
         // Nur Anwesenheit
         model.setTimesheetsEnabled(false)
         await model.refresh(force: true)
@@ -91,6 +93,129 @@ enum ScreenshotRenderer {
         await fresh.start()
         fresh.stop()
         await renderPanel(fresh, appearance: .aqua, to: directory.appending(path: "anmeldung.png"))
+
+        await renderBreakModule(to: directory)
+        await renderReadOnly(to: directory)
+        await renderCompanies(to: directory)
+    }
+
+    /// Einträge bearbeiten und löschen, Anwesenheiten korrigieren.
+    private static func renderEditing(_ model: AppModel, to directory: URL) async {
+        if let entry = model.entries.first(where: { $0.id == 6 }) {
+            model.beginEditing(entry)
+            await model.loadTasks(projectID: 3)
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "bearbeiten.png"))
+            model.askToDelete(.entry(entry))
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "loeschen.png"))
+            await renderPanel(model, appearance: .darkAqua, to: directory.appending(path: "loeschen-dunkel.png"))
+            model.cancelDeletion()
+            model.cancelEditing()
+        }
+
+        // Mittwoch: ein abgerechneter Eintrag, Odoo hat automatisch ausgestempelt
+        model.showPreviousDay()
+        model.showPreviousDay()
+        await model.refresh(force: true)
+        if let entry = model.entries.first(where: { $0.id == 1 }) {
+            model.beginEditing(entry)
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "abgerechnet.png"))
+            model.cancelEditing()
+        }
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "ausgestempelt.png"))
+        if let period = model.periods.last {
+            model.editPeriod(period)
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "ausgestempelt-korrigieren.png"))
+            model.cancelAttendanceEditing()
+        }
+        model.showToday()
+        await model.refresh(force: true)
+
+        model.setAttendanceListExpanded(true)
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "zeiten-des-tages.png"))
+        if let period = model.todayPeriods.first {
+            model.editPeriod(period)
+            model.attendanceEditor?.from = "8:00"
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "zeitraum-korrigieren.png"))
+            await renderPanel(model, appearance: .darkAqua, to: directory.appending(path: "zeitraum-korrigieren-dunkel.png"))
+            model.cancelAttendanceEditing()
+        }
+        model.setAttendanceListExpanded(false)
+    }
+
+    /// Modul Arbeitszeitgesetz: Am Donnerstag hat Odoo eine Pause eingefügt.
+    private static func renderBreakModule(to directory: URL) async {
+        let demo = makeDemoOdoo()
+        demo.withLock {
+            demo.breakModule = true
+            // 07:45–12:00 und, von Odoo angelegt, 12:30–17:00 Ortszeit
+            demo.attendances += [
+                .init(id: 11, checkIn: "2026-10-22 05:45:00", checkOut: "2026-10-22 10:00:00", inMode: "manual", outMode: "manual"),
+                .init(id: 12, checkIn: "2026-10-22 10:30:00", checkOut: "2026-10-22 15:00:00", inMode: "technical", outMode: "manual"),
+            ]
+        }
+        let model = makeModel(demo)
+        _ = try? await model.signIn(server: "odoo.example.de", apiKey: demo.apiKey, login: nil, database: nil)
+        model.finishSignIn()
+        model.stop()
+        model.showPreviousDay()
+        await model.refresh(force: true)
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "pause-eingefuegt.png"))
+        if let row = model.attendanceSummary.rows.first(where: \.isInsertedBreak), case .gap(let before, let after) = row.kind {
+            model.editGap(before: before, after: after)
+            model.attendanceEditor?.from = "13:00"
+            model.attendanceEditor?.to = "13:15"
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "pause-verschieben.png"))
+        }
+    }
+
+    /// Ohne das Recht, Anwesenheiten zu ändern.
+    private static func renderReadOnly(to directory: URL) async {
+        let demo = makeDemoOdoo()
+        demo.withLock { demo.canStamp = false }
+        let model = makeModel(demo)
+        _ = try? await model.signIn(server: "odoo.example.de", apiKey: demo.apiKey, login: nil, database: nil)
+        model.finishSignIn()
+        model.stop()
+        await model.refresh(force: true)
+        model.setAttendanceListExpanded(true)
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "nur-lesen.png"))
+    }
+
+    /// Zwei Firmen in einer Datenbank, mit je einem Mitarbeiter.
+    private static func renderCompanies(to directory: URL) async {
+        let demo = makeDemoOdoo()
+        demo.withLock {
+            demo.companies = [(1, "Nordlicht Werbeagentur GmbH"), (2, "Nordlicht Fotostudio")]
+            demo.otherEmployees = [(id: 4, companyID: 2)]
+            demo.projects += [(9, "Porträts (Beispiel AG)"), (10, "Produktfotos (Demo KG)"), (11, "Fortbildung")]
+            demo.tasks[9] = [(91, "Shooting"), (92, "Bildbearbeitung")]
+            demo.tasks[10] = [(101, "Shooting"), (102, "Freisteller")]
+            demo.tasks[11] = [(111, "Kurs"), (112, "Selbststudium")]
+            for id in 1...8 { demo.projectCompanies[id] = 1 }
+            demo.projectCompanies[9] = 2
+            demo.projectCompanies[10] = 2
+            demo.lines.append(.init(id: 7, date: "2026-10-23", name: "Auswahl für die Website", projectID: 9, taskID: 92,
+                                    hours: 1, companyID: 2, employeeID: 4))
+        }
+        let model = makeModel(demo)
+        _ = try? await model.signIn(server: "odoo.example.de", apiKey: demo.apiKey, login: nil, database: nil)
+        model.finishSignIn()
+        model.stop()
+        await model.refresh(force: true)
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "firmen.png"))
+        let picker = ProjectPicker(projects: model.projects, recentIDs: model.recentProjectIDs, selectedID: 9,
+                                   isLoading: false, companyName: { model.companyName(of: $0) },
+                                   companyOrder: model.organization?.companies.map(\.id) ?? []) { _ in }
+            .background(Color(nsColor: .windowBackgroundColor))
+        await render(picker, appearance: .aqua, to: directory.appending(path: "firmen-projektsuche.png"))
+        if let entry = model.entries.first(where: { $0.id == 7 }) {
+            model.beginEditing(entry)
+            await model.loadTasks(projectID: 9)
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "firmen-eintrag.png"))
+            model.cancelEditing()
+        }
+        await render(SettingsView().environment(model), appearance: .aqua,
+                     to: directory.appending(path: "firmen-einstellungen.png"))
     }
 
     // MARK: - Daten
@@ -135,17 +260,22 @@ enum ScreenshotRenderer {
                 8: [(81, "Entwurf"), (82, "Druckdaten")],
             ]
             demo.lines = [
-                .init(id: 1, date: "2026-10-21", name: "Beiträge für November", projectID: 6, taskID: 61, hours: 2.5),
+                .init(id: 1, date: "2026-10-21", name: "Beiträge für November", projectID: 6, taskID: 61, hours: 2.5,
+                      invoiced: true),
                 .init(id: 2, date: "2026-10-22", name: "#1042 Kontaktformular angepasst", projectID: 2, taskID: 22, hours: 1.5),
                 .init(id: 3, date: "2026-10-22", name: "Seitenstruktur abgestimmt", projectID: 5, taskID: 51, hours: 4),
                 .init(id: 4, date: "2026-10-23", name: "Plugin-Updates", projectID: 2, taskID: 21, hours: 0.25),
                 .init(id: 5, date: "2026-10-23", name: "Angebot vorbereitet", projectID: 1, taskID: 11, hours: 2),
                 .init(id: 6, date: "2026-10-23", name: "Korrekturen eingearbeitet", projectID: 3, taskID: 31, hours: 3),
             ]
-            // 08:12–12:05 und seit 12:47 Ortszeit (UTC zwei Stunden früher)
+            // 08:12–12:05 und seit 12:47 Ortszeit (UTC zwei Stunden früher); am Mittwoch hat Odoo
+            // um 18:45 automatisch ausgestempelt.
             demo.attendances = [
                 .init(id: 1, checkIn: "2026-10-23 06:12:00", checkOut: "2026-10-23 10:05:00"),
                 .init(id: 2, checkIn: "2026-10-23 10:47:00", checkOut: nil),
+                .init(id: 3, checkIn: "2026-10-21 06:00:00", checkOut: "2026-10-21 10:30:00", inMode: "manual", outMode: "manual"),
+                .init(id: 4, checkIn: "2026-10-21 11:15:00", checkOut: "2026-10-21 16:45:00", inMode: "manual",
+                      outMode: "auto_check_out"),
             ]
         }
         return demo

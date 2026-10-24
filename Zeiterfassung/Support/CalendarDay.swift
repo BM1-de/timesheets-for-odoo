@@ -21,6 +21,13 @@ struct CalendarDay: Hashable, Comparable, Codable, Sendable, CustomStringConvert
         self.init(year: components.year ?? 1970, month: components.month ?? 1, day: components.day ?? 1)
     }
 
+    /// Aus dem Feld `date` von Odoo: `2026-10-23`
+    init?(odooString: String) {
+        let parts = odooString.prefix(10).split(separator: "-").compactMap { Int($0) }
+        guard parts.count == 3 else { return nil }
+        self.init(year: parts[0], month: parts[1], day: parts[2])
+    }
+
     static func today(calendar: Calendar = .gregorianLocal) -> CalendarDay { CalendarDay(date: Date(), calendar: calendar) }
 
     /// Beginn des Tages in der Zeitzone des Kalenders.

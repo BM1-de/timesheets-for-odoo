@@ -38,8 +38,8 @@ struct DemoRoutingHTTPClient: HTTPClient {
 }
 
 /// Erfundene Projekte, Aufgaben und Einträge für den Demo-Modus, in der Sprache der App: gestern ein
-/// voller Arbeitstag, heute zwei Einträge und noch nicht eingestempelt. Was man einträgt oder stempelt,
-/// bleibt bis zum Beenden der App erhalten.
+/// voller Arbeitstag mit einem schon abgerechneten Eintrag, heute zwei Einträge und noch nicht
+/// eingestempelt. Was man einträgt, ändert oder stempelt, bleibt bis zum Beenden der App erhalten.
 enum DemoData {
     static func makeOdoo(now: Date = Date(), calendar: Calendar = .gregorianLocal) -> FakeOdoo {
         let today = CalendarDay(date: now, calendar: calendar)
@@ -73,7 +73,7 @@ enum DemoData {
             ]
             odoo.lines = [
                 .init(id: 1, date: yesterday.odooString, name: String(localized: "Beiträge für den nächsten Monat"),
-                      projectID: 6, taskID: 61, hours: 2.5),
+                      projectID: 6, taskID: 61, hours: 2.5, invoiced: true),
                 .init(id: 2, date: yesterday.odooString, name: String(localized: "Kontaktformular angepasst"),
                       projectID: 2, taskID: 22, hours: 1.5),
                 .init(id: 3, date: yesterday.odooString, name: String(localized: "Seitenstruktur abgestimmt"),

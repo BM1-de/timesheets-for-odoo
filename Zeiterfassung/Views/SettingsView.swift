@@ -23,6 +23,22 @@ struct SettingsView: View {
                 FeatureRow(symbol: "person.fill", tint: .green, title: "Anwesenheit",
                            subtitle: "Ein- und ausstempeln, Arbeitszeit des Tages",
                            status: FeatureStatus.attendance(model.capabilities), isOn: attendanceBinding)
+                if model.attendanceActive, model.attendanceCompanies.count > 1 {
+                    Picker(selection: attendanceCompanyBinding) {
+                        ForEach(model.attendanceCompanies) { company in
+                            Text(company.name).tag(Int?.some(company.id))
+                        }
+                    } label: {
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text("Stempeln für")
+                            Text("Anwesenheiten führt Odoo je Firma.")
+                                .font(.callout)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
+                    .padding(.leading, 34)
+                }
             } header: {
                 Text("Funktionen")
             } footer: {
@@ -59,6 +75,15 @@ struct SettingsView: View {
                 if model.session != nil {
                     LabeledContent("Odoo", value: model.serverDisplay)
                     LabeledContent("Schnittstelle", value: model.interfaceDisplay)
+                    if let organization = model.organization {
+                        LabeledContent("Firmen") {
+                            Text(organization.companies.enumerated().map { index, company in
+                                index == 0 ? String(localized: "\(company.name) (Hauptfirma)") : company.name
+                            }.joined(separator: ", "))
+                            .multilineTextAlignment(.trailing)
+                            .fixedSize(horizontal: false, vertical: true)
+                        }
+                    }
                     LabeledContent("Angemeldet als") {
                         HStack(spacing: 12) {
                             Text(model.userName)
@@ -154,6 +179,16 @@ struct SettingsView: View {
         Binding(
             get: { model.attendanceActive },
             set: { refusedSwitchOff = !model.setAttendanceEnabled($0) }
+        )
+    }
+
+    private var attendanceCompanyBinding: Binding<Int?> {
+        Binding(
+            get: { model.attendanceCompanyID },
+            set: { companyID in
+                guard let companyID else { return }
+                Task { await model.setAttendanceCompany(companyID) }
+            }
         )
     }
 

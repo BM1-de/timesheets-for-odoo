@@ -111,11 +111,12 @@ struct IconButtonStyle: ButtonStyle {
 struct PopUpLabel: View {
     let title: String
     var isPlaceholder = false
+    @Environment(\.isEnabled) private var isEnabled
 
     var body: some View {
         HStack(spacing: 6) {
             Text(title)
-                .foregroundStyle(isPlaceholder ? .secondary : .primary)
+                .foregroundStyle(isPlaceholder || !isEnabled ? .secondary : .primary)
                 .lineLimit(1)
                 .truncationMode(.tail)
             Image(systemName: "chevron.up.chevron.down")
@@ -229,7 +230,7 @@ struct FeatureStatus: Equatable {
                                  text: String(localized: "Odoo-App „Anwesenheiten“ gefunden"), isAvailable: true)
         case .available:
             return FeatureStatus(symbol: "info.circle.fill", color: .blue,
-                                 text: String(localized: "Gefunden. Stempeln braucht in Odoo das Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“, bis dahin nur Anzeige."),
+                                 text: String(localized: "Gefunden. Stempeln und Korrigieren braucht in Odoo das Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“, bis dahin nur Anzeige."),
                                  isAvailable: true)
         case .notInstalled:
             return problem(String(localized: "Die Odoo-App „Anwesenheiten“ ist nicht installiert. Nach der Installation auf „Erneut prüfen“ klicken."))

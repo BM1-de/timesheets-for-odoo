@@ -37,6 +37,8 @@ final class Preferences {
     var stampingRefused: Bool { didSet { defaults.set(stampingRefused, forKey: Key.stampingRefused) } }
     /// „Beim Anmelden am Mac öffnen“ wurde beim ersten Start eingeschaltet.
     var loginItemDefaultApplied: Bool { didSet { defaults.set(loginItemDefaultApplied, forKey: Key.loginItemDefault) } }
+    /// Mit Mitarbeitern in mehreren Firmen: der, mit dem die App stempelt. `nil` heißt Hauptfirma.
+    var attendanceEmployeeID: Int? { didSet { defaults.set(attendanceEmployeeID, forKey: Key.attendanceEmployee) } }
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -50,6 +52,7 @@ final class Preferences {
         loginHints = Self.load(LoginHints.self, from: defaults, forKey: Key.loginHints)
         stampingRefused = defaults.bool(forKey: Key.stampingRefused)
         loginItemDefaultApplied = defaults.bool(forKey: Key.loginItemDefault)
+        attendanceEmployeeID = defaults.object(forKey: Key.attendanceEmployee) as? Int
     }
 
     private enum Key {
@@ -63,6 +66,7 @@ final class Preferences {
         static let loginHints = "odoo.loginHints"
         static let stampingRefused = "odoo.stampingRefused"
         static let loginItemDefault = "loginItem.defaultApplied"
+        static let attendanceEmployee = "attendance.employee"
     }
 
     private func store<Value: Encodable>(_ value: Value?, forKey key: String) {

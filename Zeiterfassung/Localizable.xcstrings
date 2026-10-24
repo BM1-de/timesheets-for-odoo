@@ -1,6 +1,22 @@
 {
   "sourceLanguage" : "de",
   "strings" : {
+    "%@ (Hauptfirma)" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (main company)"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ (société principale)"
+          }
+        }
+      }
+    },
     "%@ Std." : {
       "localizations" : {
         "en" : {
@@ -45,6 +61,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Quitter %@"
+          }
+        }
+      }
+    },
+    "%@ wird in Odoo gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The period %@ will be deleted in Odoo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La période %@ sera supprimée dans Odoo."
           }
         }
       }
@@ -135,6 +167,22 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "%lld Min." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld min"
           }
         }
       }
@@ -248,6 +296,64 @@
                 "stringUnit" : {
                   "state" : "translated",
                   "value" : "%lld heures"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "%lld Zeiträume" : {
+      "localizations" : {
+        "de" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zeitraum"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld Zeiträume"
+                }
+              }
+            }
+          }
+        },
+        "en" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld period"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld periods"
+                }
+              }
+            }
+          }
+        },
+        "fr" : {
+          "variations" : {
+            "plural" : {
+              "one" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld période"
+                }
+              },
+              "other" : {
+                "stringUnit" : {
+                  "state" : "translated",
+                  "value" : "%lld périodes"
                 }
               }
             }
@@ -418,6 +524,22 @@
         }
       }
     },
+    "Andere Firma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Other company"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Autre société"
+          }
+        }
+      }
+    },
     "Angebot vorbereitet" : {
       "localizations" : {
         "en" : {
@@ -510,6 +632,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Présence"
+          }
+        }
+      }
+    },
+    "Anwesenheiten führt Odoo je Firma." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odoo keeps attendance per company."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odoo gère les présences par société."
           }
         }
       }
@@ -658,6 +796,22 @@
         }
       }
     },
+    "Automatisch beendet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ended automatically"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Terminée automatiquement"
+          }
+        }
+      }
+    },
     "Automatisch nach Updates suchen" : {
       "localizations" : {
         "en" : {
@@ -686,6 +840,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Édition"
+          }
+        }
+      }
+    },
+    "Beginn" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Début"
+          }
+        }
+      }
+    },
+    "Bei %@ Std. Arbeit sind %lld Min. Pause nötig. Odoo ergänzt beim Sichern %lld Min." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "With %@ h of work, a %lld min break is required. Odoo will add %lld min when saving."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour %@ h de travail, il faut %lld min de pause. Odoo ajoutera %lld min à l’enregistrement."
           }
         }
       }
@@ -802,6 +988,22 @@
         }
       }
     },
+    "Bitte Uhrzeiten wie 8:30 oder 830 eingeben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Please enter times like 8:30 or 830."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Veuillez saisir des heures comme 8:30 ou 830."
+          }
+        }
+      }
+    },
     "Bitte als 1:30, 1,5 oder 90 min eingeben." : {
       "localizations" : {
         "en" : {
@@ -898,6 +1100,38 @@
         }
       }
     },
+    "Das Ende der Pause muss nach dem Beginn liegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The break must end after it starts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La pause doit finir après son début."
+          }
+        }
+      }
+    },
+    "Das Ende muss nach dem Beginn liegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The end must be after the start."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La fin doit être après le début."
+          }
+        }
+      }
+    },
     "Datenbank" : {
       "localizations" : {
         "en" : {
@@ -910,6 +1144,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Base de données"
+          }
+        }
+      }
+    },
+    "Datum" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Date"
           }
         }
       }
@@ -1010,6 +1260,22 @@
         }
       }
     },
+    "Deine Anwesenheiten kannst du hier nicht ändern. Korrekturen trägt die für Anwesenheiten zuständige Person in Odoo ein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "You can’t change your attendance here. Corrections are made in Odoo by the person responsible for attendance."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Vous ne pouvez pas modifier vos présences ici. Les corrections sont saisies dans Odoo par la personne responsable des présences."
+          }
+        }
+      }
+    },
     "Demo" : {
       "localizations" : {
         "en" : {
@@ -1054,6 +1320,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "La clé API sera supprimée du trousseau. Vos saisies dans Odoo sont conservées."
+          }
+        }
+      }
+    },
+    "Der Eintrag über %@ Std. wird in Odoo gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The %@ h entry will be deleted in Odoo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La saisie de %@ h sera supprimée dans Odoo."
           }
         }
       }
@@ -1202,6 +1484,22 @@
         }
       }
     },
+    "Die Pause muss zwischen %@ und %@ liegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The break must lie between %@ and %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La pause doit se situer entre %@ et %@."
+          }
+        }
+      }
+    },
     "Die Schnittstelle /jsonrpc wurde nicht gefunden." : {
       "localizations" : {
         "en" : {
@@ -1246,6 +1544,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "L’adresse du serveur n’est pas valide."
+          }
+        }
+      }
+    },
+    "Die Zeit liegt in der Zukunft." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "That time is in the future."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Cette heure est dans le futur."
           }
         }
       }
@@ -1394,6 +1708,22 @@
         }
       }
     },
+    "Eintrag bearbeiten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit entry"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier la saisie"
+          }
+        }
+      }
+    },
     "Eintrag konnte nicht gesichert werden" : {
       "localizations" : {
         "en" : {
@@ -1406,6 +1736,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Impossible d’enregistrer la saisie"
+          }
+        }
+      }
+    },
+    "Eintrag löschen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete entry?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la saisie ?"
           }
         }
       }
@@ -1438,6 +1784,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Saisies"
+          }
+        }
+      }
+    },
+    "Ende" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "End"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fin"
           }
         }
       }
@@ -1586,6 +1948,22 @@
         }
       }
     },
+    "Firmen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Companies"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sociétés"
+          }
+        }
+      }
+    },
     "Funktionen" : {
       "localizations" : {
         "en" : {
@@ -1650,6 +2028,22 @@
         }
       }
     },
+    "Für „%@“ gibt es keinen Mitarbeiter zu deinem Odoo-Benutzer. Wähle ein anderes Projekt oder lass dir in Odoo einen Mitarbeiter anlegen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Your Odoo user has no employee in “%@”. Choose another project or ask for an employee to be created in Odoo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre utilisateur Odoo n’a pas d’employé dans « %@ ». Choisissez un autre projet ou faites créer un employé dans Odoo."
+          }
+        }
+      }
+    },
     "Gebuchte Stunden" : {
       "localizations" : {
         "en" : {
@@ -1666,18 +2060,50 @@
         }
       }
     },
-    "Gefunden. Stempeln braucht in Odoo das Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“, bis dahin nur Anzeige." : {
+    "Gefunden. Stempeln und Korrigieren braucht in Odoo das Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“, bis dahin nur Anzeige." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Found. Checking in requires the Odoo right “Officer: Manage all attendances”; until then, display only."
+            "value" : "Found. Checking in and correcting require the Odoo right “Officer: Manage all attendances”; until then, display only."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Trouvée. Pour pointer, il faut le droit Odoo « Responsable : gérer toutes les présences » ; en attendant, affichage seulement."
+            "value" : "Trouvée. Pour pointer et corriger, il faut le droit Odoo « Responsable : gérer toutes les présences » ; en attendant, affichage seulement."
+          }
+        }
+      }
+    },
+    "Gesichert. Mehr als %@ Std. Arbeit am Tag erlaubt das Arbeitszeitgesetz nicht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved. The German Working Hours Act doesn’t allow more than %@ h of work per day."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré. La loi allemande sur le temps de travail n’autorise pas plus de %@ h de travail par jour."
+          }
+        }
+      }
+    },
+    "Gesichert. Odoo hat %lld Min. Pause eingefügt (%@ – %@)." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saved. Odoo added a %lld min break (%@ – %@)."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistré. Odoo a ajouté une pause de %lld min (%@ – %@)."
           }
         }
       }
@@ -1694,6 +2120,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Hier"
+          }
+        }
+      }
+    },
+    "Gestern, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Yesterday, %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hier, %@"
           }
         }
       }
@@ -1777,6 +2219,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas encore de présence aujourd’hui"
+          }
+        }
+      }
+    },
+    "Heute, %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Today, %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aujourd’hui, %@"
+          }
+        }
+      }
+    },
+    "Hinweis schließen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Dismiss"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fermer le message"
           }
         }
       }
@@ -2165,6 +2639,38 @@
         }
       }
     },
+    "Löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer"
+          }
+        }
+      }
+    },
+    "Löschen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer…"
+          }
+        }
+      }
+    },
     "Menüleiste" : {
       "localizations" : {
         "en" : {
@@ -2241,6 +2747,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Rechercher des mises à jour…"
+          }
+        }
+      }
+    },
+    "Nachtragen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter"
+          }
+        }
+      }
+    },
+    "Nachtragen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter…"
           }
         }
       }
@@ -2373,6 +2911,22 @@
         }
       }
     },
+    "Nötig sind %lld Min. bei über %@ Std. und %lld Min. bei über %@ Std. Arbeit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Required: %lld min for more than %@ h and %lld min for more than %@ h of work."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Il faut %lld min au-delà de %@ h et %lld min au-delà de %@ h de travail."
+          }
+        }
+      }
+    },
     "Odoo" : {
       "shouldTranslate" : false
     },
@@ -2388,6 +2942,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Odoo a refusé d’enregistrer votre présence."
+          }
+        }
+      }
+    },
+    "Odoo hat dich automatisch ausgestempelt. Trag ein, wann du wirklich gegangen bist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odoo checked you out automatically. Enter when you actually left."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Odoo a enregistré votre départ automatiquement. Indiquez l’heure réelle de votre départ."
           }
         }
       }
@@ -2504,6 +3074,22 @@
         }
       }
     },
+    "Ohne Aufgabe" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No task"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans tâche"
+          }
+        }
+      }
+    },
     "Ohne Beschreibung" : {
       "localizations" : {
         "en" : {
@@ -2520,6 +3106,38 @@
         }
       }
     },
+    "Ohne Firma" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No company"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans société"
+          }
+        }
+      }
+    },
+    "Ohne Firma · gebucht in %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No company · booked in %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans société · saisi dans %@"
+          }
+        }
+      }
+    },
     "Online-Shop (Demo KG)" : {
       "localizations" : {
         "en" : {
@@ -2532,6 +3150,70 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Boutique en ligne (Démo SAS)"
+          }
+        }
+      }
+    },
+    "Passt: Bei %@ Std. Arbeit sind %lld Min. Pause nötig." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "OK: with %@ h of work, a %lld min break is required."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "C’est bon : pour %@ h de travail, il faut %lld min de pause."
+          }
+        }
+      }
+    },
+    "Pause %@ – %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break %@ – %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause %@ – %@"
+          }
+        }
+      }
+    },
+    "Pause eingefügt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break added"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause ajoutée"
+          }
+        }
+      }
+    },
+    "Pause verschoben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Break moved."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pause déplacée."
           }
         }
       }
@@ -2728,6 +3410,38 @@
         }
       }
     },
+    "Schon abgerechnet: Projekt, Aufgabe, Dauer und Datum stehen fest, löschen geht nicht mehr. Die Beschreibung kannst du noch ändern." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already invoiced: project, task, duration and date are fixed, and the entry can’t be deleted. You can still change the description."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà facturée : projet, tâche, durée et date sont figés et la saisie ne peut plus être supprimée. Vous pouvez encore modifier la description."
+          }
+        }
+      }
+    },
+    "Schon freigegeben: Ändern kann diesen Eintrag nur noch, wer in Odoo Zeiteinträge freigibt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Already validated: only someone who validates timesheets in Odoo can still change this entry."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déjà validée : seule une personne qui valide les feuilles de temps dans Odoo peut encore modifier cette saisie."
+          }
+        }
+      }
+    },
     "Seitenstruktur abgestimmt" : {
       "localizations" : {
         "en" : {
@@ -2756,6 +3470,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Serveur"
+          }
+        }
+      }
+    },
+    "Sichern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Save"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
+          }
+        }
+      }
+    },
+    "Sichern ändert das Ende des Zeitraums davor und den Beginn des Zeitraums danach." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Saving changes the end of the period before and the start of the period after."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "L’enregistrement modifie la fin de la période précédente et le début de la suivante."
           }
         }
       }
@@ -2808,18 +3554,34 @@
         }
       }
     },
-    "Stempeln geht hier nur mit dem Odoo-Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“ oder als eigener Anwesenheitsgenehmiger. Bis dahin in Odoo stempeln." : {
+    "Stempeln für" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Checking in here requires the Odoo access right “Officer: Manage all attendances” or being your own attendance approver. Until then, check in and out in Odoo."
+            "value" : "Check in for"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Pour pointer ici, il faut le droit Odoo « Responsable : gérer toutes les présences » ou être son propre approbateur présences. En attendant, pointez dans Odoo."
+            "value" : "Pointer pour"
+          }
+        }
+      }
+    },
+    "Stempeln geht hier nur mit dem Odoo-Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“ oder als eigener Anwesenheitsgenehmiger. Bis dahin in Odoo stempeln; Korrekturen trägt die für Anwesenheiten zuständige Person ein." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checking in here requires the Odoo access right “Officer: Manage all attendances” or being your own attendance approver. Until then, check in and out in Odoo; corrections are made by the person responsible for attendance."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pour pointer ici, il faut le droit Odoo « Responsable : gérer toutes les présences » ou être son propre approbateur présences. En attendant, pointez dans Odoo ; les corrections sont saisies par la personne responsable des présences."
           }
         }
       }
@@ -2936,6 +3698,22 @@
         }
       }
     },
+    "Unter %@ Std. Arbeit ist keine Pause vorgeschrieben." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No break is required below %@ h of work."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucune pause n’est exigée en dessous de %@ h de travail."
+          }
+        }
+      }
+    },
     "Updates" : {
       "localizations" : {
         "en" : {
@@ -3016,6 +3794,22 @@
         }
       }
     },
+    "Verschieben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Move"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Déplacer"
+          }
+        }
+      }
+    },
     "Version" : {
       "localizations" : {
         "en" : {
@@ -3080,6 +3874,22 @@
         }
       }
     },
+    "Von Odoo eingefügt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Added by Odoo"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajoutée par Odoo"
+          }
+        }
+      }
+    },
     "Vorheriger Tag" : {
       "localizations" : {
         "en" : {
@@ -3108,6 +3918,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Jour précédent (⌘[)"
+          }
+        }
+      }
+    },
+    "Wann war deine Pause?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When was your break?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand était votre pause ?"
           }
         }
       }
@@ -3336,6 +4162,22 @@
         }
       }
     },
+    "Zeiten des Tages" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Times of the day"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Heures de la journée"
+          }
+        }
+      }
+    },
     "Zeiterfassung" : {
       "localizations" : {
         "en" : {
@@ -3364,6 +4206,102 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Les feuilles de temps et la présence sont désactivées ou indisponibles dans cette base de données Odoo."
+          }
+        }
+      }
+    },
+    "Zeitraum gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period deleted."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Période supprimée."
+          }
+        }
+      }
+    },
+    "Zeitraum gesichert." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period saved."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Période enregistrée."
+          }
+        }
+      }
+    },
+    "Zeitraum löschen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete Period"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la période"
+          }
+        }
+      }
+    },
+    "Zeitraum löschen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Delete period?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supprimer la période ?"
+          }
+        }
+      }
+    },
+    "Zeitraum nachgetragen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Period added."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Période ajoutée."
+          }
+        }
+      }
+    },
+    "Zeitraum nachtragen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Add period"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ajouter une période"
           }
         }
       }
@@ -3432,6 +4370,86 @@
         }
       }
     },
+    "Zum Bearbeiten öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the entry for editing"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre la saisie pour la modifier"
+          }
+        }
+      }
+    },
+    "Zum Korrigieren öffnen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Opens the time for correction"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Ouvre l’horaire pour le corriger"
+          }
+        }
+      }
+    },
+    "abgerechnet" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "invoiced"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "facturée"
+          }
+        }
+      }
+    },
+    "aufgeklappt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "expanded"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "développé"
+          }
+        }
+      }
+    },
+    "bis" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "to"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "à"
+          }
+        }
+      }
+    },
     "eingeschaltet" : {
       "localizations" : {
         "en" : {
@@ -3460,6 +4478,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "pointage en cours"
+          }
+        }
+      }
+    },
+    "freigegeben" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "validated"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "validée"
           }
         }
       }
@@ -3560,6 +4594,54 @@
         }
       }
     },
+    "von" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "from"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "de"
+          }
+        }
+      }
+    },
+    "zugeklappt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "collapsed"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "réduit"
+          }
+        }
+      }
+    },
+    "Ändern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Edit"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier"
+          }
+        }
+      }
+    },
     "Ändern kannst du das jederzeit in den Einstellungen." : {
       "localizations" : {
         "en" : {
@@ -3576,6 +4658,22 @@
         }
       }
     },
+    "Änderung konnte nicht gesichert werden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t save the change"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer la modification"
+          }
+        }
+      }
+    },
     "Über %@" : {
       "localizations" : {
         "en" : {
@@ -3588,6 +4686,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "À propos de %@"
+          }
+        }
+      }
+    },
+    "Überschneidet sich mit %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Overlaps with %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Chevauche %@."
+          }
+        }
+      }
+    },
+    "„%@“ (%@ Std.) wird in Odoo gelöscht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "“%@” (%@ h) will be deleted in Odoo."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "« %@ » (%@ h) sera supprimée dans Odoo."
           }
         }
       }
