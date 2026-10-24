@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- New app icon in Odoo's purple: a stopwatch whose teal segment shows the booked time.
+
 ## 0.1.0 – 2026-10-23
 
 First version.

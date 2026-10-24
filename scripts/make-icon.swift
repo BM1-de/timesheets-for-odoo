@@ -3,8 +3,9 @@
 // Copyright (C) 2026 Baumgärtner Marketing GmbH
 // SPDX-License-Identifier: AGPL-3.0-or-later
 //
-// Zeichnet das App-Symbol (blaue Kachel mit weißer Uhr) in allen Größen des macOS-Rasters
-// und schreibt die PNG-Dateien samt Contents.json in den Asset-Katalog.
+// Zeichnet das App-Symbol (Stoppuhr auf einer Kachel in Odoo-Lila) in allen Größen des
+// macOS-Rasters und schreibt die PNG-Dateien samt Contents.json in den Asset-Katalog.
+// Eigene Zeichnung in den Odoo-Farben, bewusst kein Odoo-Logo und keine Kopie der Odoo-Symbole.
 //
 //   swift scripts/make-icon.swift
 
@@ -13,6 +14,11 @@ import AppKit
 let outputDirectory = URL(fileURLWithPath: CommandLine.arguments.count > 1
     ? CommandLine.arguments[1]
     : "Zeiterfassung/Assets.xcassets/AppIcon.appiconset")
+
+func color(_ hex: Int) -> NSColor {
+    NSColor(srgbRed: CGFloat((hex >> 16) & 0xFF) / 255, green: CGFloat((hex >> 8) & 0xFF) / 255,
+            blue: CGFloat(hex & 0xFF) / 255, alpha: 1)
+}
 
 func drawIcon(pixels: Int) -> Data {
     let size = CGFloat(pixels)
@@ -36,35 +42,41 @@ func drawIcon(pixels: Int) -> Data {
     shadow.shadowOffset = NSSize(width: 0, height: -10)
     shadow.shadowBlurRadius = 22
     shadow.set()
-    NSColor(srgbRed: 0.04, green: 0.42, blue: 0.86, alpha: 1).setFill()
+    color(0x714B67).setFill()
     tilePath.fill()
     NSGraphicsContext.restoreGraphicsState()
 
     NSGraphicsContext.saveGraphicsState()
     tilePath.addClip()
-    let gradient = NSGradient(starting: NSColor(srgbRed: 0.25, green: 0.60, blue: 1.00, alpha: 1),
-                              ending: NSColor(srgbRed: 0.00, green: 0.36, blue: 0.80, alpha: 1))
+    let gradient = NSGradient(starting: color(0x7E5674), ending: color(0x644260))
     gradient?.draw(in: tile, angle: -90)
     NSGraphicsContext.restoreGraphicsState()
 
-    // Uhr: weißer Ring, zwei Zeiger, Mittelpunkt.
-    let center = NSPoint(x: 512, y: 512)
-    NSColor.white.setStroke()
-    NSColor.white.setFill()
-    let ring = NSBezierPath(ovalIn: NSRect(x: center.x - 250, y: center.y - 250, width: 500, height: 500))
-    ring.lineWidth = 52
-    ring.stroke()
+    // Stoppuhr: helles Zifferblatt mit Krone, ein Segment in Petrol für die gebuchte Zeit
+    // (12 bis 4 Uhr) und ein lila Zeiger auf „jetzt“.
+    let center = NSPoint(x: 512, y: 476)
+    color(0xF6EFF4).setFill()
+    NSBezierPath(roundedRect: NSRect(x: 459, y: 762, width: 106, height: 42), xRadius: 18, yRadius: 18).fill()
+    NSBezierPath(rect: NSRect(x: 493, y: 730, width: 38, height: 46)).fill()
+    NSBezierPath(ovalIn: NSRect(x: center.x - 264, y: center.y - 264, width: 528, height: 528)).fill()
 
-    let hands = NSBezierPath()
-    hands.lineWidth = 46
-    hands.lineCapStyle = .round
-    hands.lineJoinStyle = .round
-    hands.move(to: NSPoint(x: center.x, y: center.y + 170))
-    hands.line(to: center)
-    hands.line(to: NSPoint(x: center.x + 112, y: center.y - 66))
-    hands.stroke()
+    let segment = NSBezierPath()
+    segment.move(to: center)
+    segment.line(to: NSPoint(x: center.x, y: center.y + 208))
+    segment.appendArc(withCenter: center, radius: 208, startAngle: 90, endAngle: -30, clockwise: true)
+    segment.close()
+    color(0x017E84).setFill()
+    segment.fill()
 
-    NSBezierPath(ovalIn: NSRect(x: center.x - 34, y: center.y - 34, width: 68, height: 68)).fill()
+    let hand = NSBezierPath()
+    hand.lineWidth = 40
+    hand.lineCapStyle = .round
+    hand.move(to: center)
+    hand.line(to: NSPoint(x: center.x + 133.4, y: center.y - 77))
+    color(0x714B67).setStroke()
+    hand.stroke()
+    color(0x714B67).setFill()
+    NSBezierPath(ovalIn: NSRect(x: center.x - 33, y: center.y - 33, width: 66, height: 66)).fill()
 
     NSGraphicsContext.restoreGraphicsState()
     guard let png = bitmap.representation(using: .png, properties: [:]) else { fatalError("PNG fehlgeschlagen") }
