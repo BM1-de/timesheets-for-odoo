@@ -46,10 +46,13 @@ ZEITEINTRÄGE
 • Aufgabe, Beschreibung und Dauer wie 1:30, 1,5 oder 90 min
 • Auf Wunsch auf Viertelstunden gerundet
 • Frühere Tage durchblättern und nachtragen
+• Einträge per Klick ändern oder löschen
+• Mehrere Firmen: Projekte nach Firma, Zwischensumme je Firma
 
 ANWESENHEIT
 • Ein- und ausstempeln mit einem Klick
 • Zeiten und Pausen des Tages
+• Beginn, Ende und Pausen korrigieren, Vergessenes nachtragen
 • Wie viel davon noch nicht auf Projekte gebucht ist
 
 MENÜLEISTE
@@ -79,10 +82,13 @@ TIME ENTRIES
 • Task, description and duration such as 1:30, 1.5 or 90 min
 • Optionally rounded to quarter hours
 • Browse earlier days and fill them in
+• Edit or delete entries with a click
+• Several companies: projects by company, subtotal per company
 
 ATTENDANCE
 • Check in and out with one click
 • Today's periods and breaks
+• Correct start, end and breaks, add forgotten periods
 • How much of it is not yet booked to projects
 
 MENU BAR
@@ -112,10 +118,13 @@ SAISIES DE TEMPS
 • Tâche, description et durée comme 1:30, 1,5 ou 90 min
 • Arrondi au quart d’heure si vous le souhaitez
 • Parcourir et compléter les jours précédents
+• Modifier ou supprimer une saisie d’un clic
+• Plusieurs sociétés : projets par société, sous-total par société
 
 PRÉSENCE
 • Pointer l’arrivée et le départ d’un clic
 • Périodes et pauses du jour
+• Corriger l’arrivée, le départ et les pauses, ajouter une période oubliée
 • Ce qui n’est pas encore saisi sur des projets
 
 BARRE DES MENUS
