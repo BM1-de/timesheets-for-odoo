@@ -2,8 +2,9 @@
 
 ## Deutsch
 
-Diese Erklärung gilt für die Mac-App *Zeiterfassung für Odoo* der Baumgärtner Marketing GmbH,
-aus dem Mac App Store und als DMG von GitHub.
+Diese Erklärung gilt für die Apps *Zeiterfassung für Odoo* der Baumgärtner Marketing GmbH: für
+den Mac aus dem Mac App Store und als DMG von GitHub, für das iPhone aus dem App Store und für
+Android aus Google Play.
 
 - **Keine Daten für uns.** Die App sendet uns nichts: keine Nutzungsstatistik, keine Werbung,
   kein Tracking, keine Absturzberichte.
@@ -11,11 +12,13 @@ aus dem Mac App Store und als DMG von GitHub.
   Mit deinem Odoo-Konto liest sie dort Projekte, Aufgaben, deine Zeiteinträge und Anwesenheiten
   und legt neue Einträge und Stempelzeiten an. Für diese Daten ist der Betreiber deines Odoo
   verantwortlich, meist dein Arbeitgeber.
-- **Auf deinem Mac.** Der API-Schlüssel liegt im Schlüsselbund von macOS, die übrigen Einstellungen
-  bei der App auf deinem Mac. Beim Abmelden löscht die App den Schlüssel.
+- **Auf deinem Gerät.** Der API-Schlüssel liegt auf Mac und iPhone im Schlüsselbund, unter Android
+  verschlüsselt mit einem Schlüssel aus dem Android-Keystore. Die übrigen Einstellungen liegen bei
+  der App auf dem Gerät; unter Android nimmt die Datensicherung sie nicht mit. Beim Abmelden löscht
+  die App den Schlüssel.
 - **Updates.** Die Fassung von GitHub lädt einmal am Tag die Versionsliste von GitHub
-  (github.com); dabei gelten die Datenschutzbestimmungen von GitHub. Die Fassung aus dem App Store
-  fragt nichts selbst ab, ihre Updates kommen über den App Store.
+  (github.com); dabei gelten die Datenschutzbestimmungen von GitHub. Die Fassungen aus App Store und
+  Google Play fragen nichts selbst ab, ihre Updates kommen über den jeweiligen Store.
 - **Demo-Modus.** Mit dem Server „demo“ arbeitet die App mit erfundenen Daten im Arbeitsspeicher,
   ohne Verbindung nach außen.
 
@@ -24,8 +27,9 @@ zum Datenschutz an <baumgaertner@bm1.de>.
 
 ## English
 
-This policy covers the Mac app *Timesheets for Odoo* by Baumgärtner Marketing GmbH, from the Mac
-App Store and as a DMG from GitHub.
+This policy covers the *Timesheets for Odoo* apps by Baumgärtner Marketing GmbH: for the Mac from
+the Mac App Store and as a DMG from GitHub, for iPhone from the App Store and for Android from
+Google Play.
 
 - **No data for us.** The app sends us nothing: no usage statistics, no ads, no tracking, no crash
   reports.
@@ -33,11 +37,12 @@ App Store and as a DMG from GitHub.
   With your Odoo account it reads projects, tasks, your time entries and attendances there and
   creates new entries and check-ins. The operator of your Odoo, usually your employer, is
   responsible for this data.
-- **On your Mac.** The API key is stored in the macOS Keychain, the other settings with the app on
-  your Mac. Signing out deletes the key.
+- **On your device.** On Mac and iPhone the API key is stored in the Keychain, on Android encrypted
+  with a key from the Android Keystore. The other settings stay with the app on the device; Android
+  backups do not include them. Signing out deletes the key.
 - **Updates.** The GitHub version downloads the list of versions from GitHub (github.com) once a
-  day; GitHub's privacy policy applies. The App Store version does not check by itself, its
-  updates come through the App Store.
+  day; GitHub's privacy policy applies. The App Store and Google Play versions do not check by
+  themselves, their updates come through the store.
 - **Demo mode.** With the server "demo" the app works with invented data in memory, without any
   outside connection.
 
@@ -46,8 +51,9 @@ Privacy questions to <baumgaertner@bm1.de>.
 
 ## Français
 
-Cette politique s’applique à l’app Mac *Feuilles de temps pour Odoo* de Baumgärtner Marketing
-GmbH, issue du Mac App Store ou téléchargée en DMG depuis GitHub.
+Cette politique s’applique aux apps *Feuilles de temps pour Odoo* de Baumgärtner Marketing GmbH :
+pour Mac depuis le Mac App Store et en DMG depuis GitHub, pour iPhone depuis l’App Store et pour
+Android depuis Google Play.
 
 - **Aucune donnée pour nous.** L’app ne nous envoie rien : ni statistiques d’utilisation, ni
   publicité, ni suivi, ni rapports de plantage.
@@ -55,11 +61,13 @@ GmbH, issue du Mac App Store ou téléchargée en DMG depuis GitHub.
   indiquez. Avec votre compte Odoo, elle y lit les projets, les tâches, vos saisies de temps et
   vos présences, et crée de nouvelles saisies et pointages. L’exploitant de votre Odoo,
   généralement votre employeur, est responsable de ces données.
-- **Sur votre Mac.** La clé API est enregistrée dans le trousseau de macOS, les autres réglages
-  avec l’app sur votre Mac. La déconnexion supprime la clé.
+- **Sur votre appareil.** Sur Mac et iPhone, la clé API est enregistrée dans le trousseau, sur
+  Android chiffrée avec une clé du Keystore Android. Les autres réglages restent avec l’app sur
+  l’appareil ; les sauvegardes Android ne les incluent pas. La déconnexion supprime la clé.
 - **Mises à jour.** La version GitHub télécharge une fois par jour la liste des versions depuis
-  GitHub (github.com) ; la politique de confidentialité de GitHub s’applique. La version de l’App
-  Store ne vérifie rien elle-même, ses mises à jour passent par l’App Store.
+  GitHub (github.com) ; la politique de confidentialité de GitHub s’applique. Les versions de l’App
+  Store et de Google Play ne vérifient rien d’elles-mêmes, leurs mises à jour arrivent par le
+  store.
 - **Mode démo.** Avec le serveur « demo », l’app fonctionne avec des données fictives en mémoire,
   sans aucune connexion extérieure.
 
