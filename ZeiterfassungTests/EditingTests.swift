@@ -75,6 +75,7 @@ struct EditingTests {
         let odoo = FakeOdoo()
         odoo.withLock { odoo.lines = [.init(id: 1, date: "2026-10-23", name: "Telefonat", projectID: 2, taskID: 21, hours: 47.0 / 60)] }
         let model = try await signedIn(odoo)
+        model.preferences.durationRounding = .quarterHour
         model.beginEditing(try #require(model.entries.first))
         await model.loadTasks(projectID: 2)
         #expect(model.draft.durationText == "0:47")

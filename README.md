@@ -16,8 +16,8 @@ Tages steht immer in der Menüleiste.
 
 - **Zeiteinträge:** Projekt (mit Suche, zuletzt verwendete oben), Aufgabe, Beschreibung und
   Dauer. Die Dauer versteht `1:30`, `1,5`, `90 min` oder `1h30`, auch mit englischen und
-  französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf Wunsch auf Viertelstunden
-  gerundet. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
+  französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf Wunsch auf 15, 30 oder 60
+  Minuten gerundet. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
   sich durchblättern und nachtragen.
 - **Bearbeiten:** Ein Klick auf einen Eintrag öffnet ihn unten im Formular, auch um ihn auf einen
   anderen Tag zu legen; löschen geht nach einer Rückfrage. Abgerechnete Einträge sperrt Odoo bis
@@ -45,7 +45,7 @@ Tages steht immer in der Menüleiste.
   folgen der eingestellten Region, auch mit 12-Stunden-Uhr.
 
 <p>
-  <img src="docs/screenshots/eintrag.png" width="372" alt="Neuer Eintrag mit Projekt, Aufgabe, Beschreibung und Dauer, die auf eine Viertelstunde gerundet wird">
+  <img src="docs/screenshots/eintrag.png" width="372" alt="Neuer Eintrag mit Projekt, Aufgabe, Beschreibung und Dauer, die auf 15 Minuten gerundet wird">
   <img src="docs/screenshots/projektsuche.png" width="340" alt="Projektauswahl mit Suche und zuletzt verwendeten Projekten">
 </p>
 <img src="docs/screenshots/bearbeiten.png" width="372" alt="Ein Eintrag ist zum Bearbeiten geöffnet: Projekt, Aufgabe, Beschreibung, Dauer und Datum, darunter Löschen, Abbrechen und Sichern">

@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Rounding is now a choice in the settings: don't round, 15 minutes, 30 minutes or 1 hour, to
+  the nearest unit and never to zero. New installations don't round; the former switch “Round
+  durations to quarter hours” becomes 15 minutes, so existing users keep what they had. The − and
+  + buttons step by the chosen unit, without rounding by 15 minutes.
+
 ## 0.2.0 – 2026-10-24
 
 - New app icon in Odoo's purple: a stopwatch whose teal segment shows the booked time.

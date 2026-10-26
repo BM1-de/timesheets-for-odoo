@@ -111,7 +111,20 @@ struct SettingsView: View {
                             .controlSize(.small)
                     }
                 }
-                Toggle("Dauer auf Viertelstunden runden", isOn: $preferences.roundsToQuarterHour)
+                Picker(selection: $preferences.durationRounding) {
+                    Text("Nicht runden").tag(Preferences.DurationRounding.off)
+                    Text("15 Minuten").tag(Preferences.DurationRounding.quarterHour)
+                    Text("30 Minuten").tag(Preferences.DurationRounding.halfHour)
+                    Text("1 Stunde").tag(Preferences.DurationRounding.hour)
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Dauer beim Buchen runden")
+                        Text("Rundet die eingetragene Dauer zur nächsten Einheit, bei 15\u{00A0}Minuten zum Beispiel 1:20 auf 1:15 und 0:05 auf 0:15.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             }
 
             if let updates {

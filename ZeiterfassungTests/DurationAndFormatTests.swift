@@ -39,15 +39,33 @@ struct DurationInputTests {
         #expect(DurationInput.parse(text) == .tooLong)
     }
 
-    @Test("rundet auf Viertelstunden, aber nie auf null")
-    func roundsToQuarterHour() {
-        #expect(DurationInput.roundedToQuarterHour(0) == 0)
-        #expect(DurationInput.roundedToQuarterHour(5) == 15)
-        #expect(DurationInput.roundedToQuarterHour(7) == 15)
-        #expect(DurationInput.roundedToQuarterHour(22) == 15)
-        #expect(DurationInput.roundedToQuarterHour(23) == 30)
-        #expect(DurationInput.roundedToQuarterHour(80) == 75)
-        #expect(DurationInput.roundedToQuarterHour(90) == 90)
+    @Test("rundet zur nächsten Einheit, aber nie auf null")
+    func rounds() {
+        #expect(DurationInput.rounded(0, toNearest: 15) == 0)
+        #expect(DurationInput.rounded(5, toNearest: 15) == 15)
+        #expect(DurationInput.rounded(7, toNearest: 15) == 15)
+        #expect(DurationInput.rounded(22, toNearest: 15) == 15)
+        #expect(DurationInput.rounded(23, toNearest: 15) == 30)
+        #expect(DurationInput.rounded(80, toNearest: 15) == 75)
+        #expect(DurationInput.rounded(90, toNearest: 15) == 90)
+        #expect(DurationInput.rounded(10, toNearest: 30) == 30)
+        #expect(DurationInput.rounded(44, toNearest: 30) == 30)
+        #expect(DurationInput.rounded(45, toNearest: 30) == 60)
+        #expect(DurationInput.rounded(20, toNearest: 60) == 60)
+        #expect(DurationInput.rounded(89, toNearest: 60) == 60)
+        #expect(DurationInput.rounded(90, toNearest: 60) == 120)
+    }
+
+    @Test("−/+ geht zur nächsten Stufe, nie unter null")
+    func steps() {
+        #expect(DurationInput.stepped(20, by: 1, unit: 15) == 30)
+        #expect(DurationInput.stepped(30, by: 1, unit: 15) == 45)
+        #expect(DurationInput.stepped(20, by: -1, unit: 15) == 15)
+        #expect(DurationInput.stepped(15, by: -1, unit: 15) == 0)
+        #expect(DurationInput.stepped(0, by: -1, unit: 15) == 0)
+        #expect(DurationInput.stepped(50, by: 1, unit: 30) == 60)
+        #expect(DurationInput.stepped(20, by: 1, unit: 60) == 60)
+        #expect(DurationInput.stepped(80, by: -1, unit: 60) == 60)
     }
 
     @Test("schreibt Stunden:Minuten und gesprochenen Text")

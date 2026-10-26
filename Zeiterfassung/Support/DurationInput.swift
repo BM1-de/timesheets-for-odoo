@@ -26,10 +26,17 @@ enum DurationInput {
         return minutes > maximumMinutes ? .tooLong : .minutes(minutes)
     }
 
-    /// Rundet auf die nächste Viertelstunde, aber nie auf null.
-    static func roundedToQuarterHour(_ minutes: Int) -> Int {
+    /// Rundet zur nächsten Einheit von `unit` Minuten, aber nie auf null.
+    static func rounded(_ minutes: Int, toNearest unit: Int) -> Int {
         guard minutes > 0 else { return 0 }
-        return max(15, Int((Double(minutes) / 15).rounded()) * 15)
+        guard unit > 1 else { return minutes }
+        return max(unit, Int((Double(minutes) / Double(unit)).rounded()) * unit)
+    }
+
+    /// −/+: von `minutes` zur nächsten Stufe von `unit` Minuten in diese Richtung, nie unter null.
+    static func stepped(_ minutes: Int, by direction: Int, unit: Int) -> Int {
+        let steps = direction > 0 ? minutes / unit + 1 : (minutes + unit - 1) / unit - 1
+        return max(0, steps * unit)
     }
 
     /// `1:05`

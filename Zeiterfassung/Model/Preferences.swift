@@ -15,6 +15,44 @@ final class Preferences {
         case both
     }
 
+    /// Rundung der Dauer beim Buchen. Der Wert ist die Einheit in Minuten, 0 heißt nicht runden.
+    enum DurationRounding: Int, CaseIterable, Sendable {
+        case off = 0
+        case quarterHour = 15
+        case halfHour = 30
+        case hour = 60
+
+        /// Einheit in Minuten; `nil` ohne Rundung.
+        var minutes: Int? { self == .off ? nil : rawValue }
+
+        /// Schritt der Tasten − und +: die Einheit, ohne Rundung eine Viertelstunde.
+        var step: Int { minutes ?? 15 }
+
+        var lessLabel: String {
+            switch step {
+            case 30: String(localized: "30 Minuten weniger")
+            case 60: String(localized: "1 Stunde weniger")
+            default: String(localized: "15 Minuten weniger")
+            }
+        }
+
+        var moreLabel: String {
+            switch step {
+            case 30: String(localized: "30 Minuten mehr")
+            case 60: String(localized: "1 Stunde mehr")
+            default: String(localized: "15 Minuten mehr")
+            }
+        }
+
+        var stepHelp: String {
+            switch step {
+            case 30: String(localized: "Dauer in halben Stunden ändern")
+            case 60: String(localized: "Dauer in ganzen Stunden ändern")
+            default: String(localized: "Dauer in Viertelstunden ändern")
+            }
+        }
+    }
+
     /// Angaben der letzten Anmeldung zum Vorausfüllen.
     struct LoginHints: Codable, Equatable, Sendable {
         var server: String
@@ -28,7 +66,7 @@ final class Preferences {
     var attendanceEnabled: Bool { didSet { defaults.set(attendanceEnabled, forKey: Key.attendance) } }
     var menuBarDisplay: MenuBarDisplay { didSet { defaults.set(menuBarDisplay.rawValue, forKey: Key.menuBarDisplay) } }
     var showsCheckedInDot: Bool { didSet { defaults.set(showsCheckedInDot, forKey: Key.checkedInDot) } }
-    var roundsToQuarterHour: Bool { didSet { defaults.set(roundsToQuarterHour, forKey: Key.quarterHour) } }
+    var durationRounding: DurationRounding { didSet { defaults.set(durationRounding.rawValue, forKey: Key.durationRounding) } }
     var session: OdooSession? { didSet { store(session, forKey: Key.session) } }
     var cachedCapabilities: Capabilities? { didSet { store(cachedCapabilities, forKey: Key.capabilities) } }
     var loginHints: LoginHints? { didSet { store(loginHints, forKey: Key.loginHints) } }
@@ -46,7 +84,7 @@ final class Preferences {
         attendanceEnabled = defaults.object(forKey: Key.attendance) as? Bool ?? true
         menuBarDisplay = defaults.string(forKey: Key.menuBarDisplay).flatMap(MenuBarDisplay.init(rawValue:)) ?? .booked
         showsCheckedInDot = defaults.object(forKey: Key.checkedInDot) as? Bool ?? true
-        roundsToQuarterHour = defaults.object(forKey: Key.quarterHour) as? Bool ?? true
+        durationRounding = Self.durationRounding(in: defaults)
         session = Self.load(OdooSession.self, from: defaults, forKey: Key.session)
         cachedCapabilities = Self.load(Capabilities.self, from: defaults, forKey: Key.capabilities)
         loginHints = Self.load(LoginHints.self, from: defaults, forKey: Key.loginHints)
@@ -60,6 +98,8 @@ final class Preferences {
         static let attendance = "feature.attendance"
         static let menuBarDisplay = "menuBar.display"
         static let checkedInDot = "menuBar.checkedInDot"
+        static let durationRounding = "duration.rounding"
+        /// Bis Version 0.2, nur noch zum Übernehmen.
         static let quarterHour = "duration.roundToQuarterHour"
         static let session = "odoo.session"
         static let capabilities = "odoo.capabilities"
@@ -67,6 +107,27 @@ final class Preferences {
         static let stampingRefused = "odoo.stampingRefused"
         static let loginItemDefault = "loginItem.defaultApplied"
         static let attendanceEmployee = "attendance.employee"
+    }
+
+    /// Bis Version 0.2 gab es nur den Schalter „Dauer auf Viertelstunden runden“, ab Werk an. Wer sich
+    /// schon einmal angemeldet hat, rundet deshalb weiter auf 15 Minuten, sonst wie eingestellt; neu ist ab
+    /// Werk „Nicht runden“. Das Ergebnis wird gleich gespeichert, damit eine spätere Anmeldung nichts mehr
+    /// ändert.
+    private static func durationRounding(in defaults: UserDefaults) -> DurationRounding {
+        if let value = defaults.object(forKey: Key.durationRounding) as? Int {
+            return DurationRounding(rawValue: value) ?? .off
+        }
+        let rounding: DurationRounding
+        if let quarterHour = defaults.object(forKey: Key.quarterHour) as? Bool {
+            rounding = quarterHour ? .quarterHour : .off
+        } else if defaults.object(forKey: Key.loginHints) != nil {
+            rounding = .quarterHour
+        } else {
+            rounding = .off
+        }
+        defaults.set(rounding.rawValue, forKey: Key.durationRounding)
+        defaults.removeObject(forKey: Key.quarterHour)
+        return rounding
     }
 
     private func store<Value: Encodable>(_ value: Value?, forKey key: String) {

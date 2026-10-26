@@ -789,12 +789,13 @@ final class AppModel {
 
     var durationResult: DurationInput.Result { DurationInput.parse(draft.durationText) }
 
-    /// Minuten, die gebucht würden (ggf. auf Viertelstunden gerundet). Beim Bearbeiten bleibt eine
+    /// Minuten, die gebucht würden (ggf. gerundet, siehe Einstellungen). Beim Bearbeiten bleibt eine
     /// unveränderte Dauer minutengenau, wie sie in Odoo steht.
     var draftMinutes: Int? {
         guard case .minutes(let minutes) = durationResult, minutes > 0 else { return nil }
         if let editingEntry, draft.durationText == DurationInput.format(editingEntry.minutes) { return editingEntry.minutes }
-        return preferences.roundsToQuarterHour ? DurationInput.roundedToQuarterHour(minutes) : minutes
+        guard let unit = preferences.durationRounding.minutes else { return minutes }
+        return DurationInput.rounded(minutes, toNearest: unit)
     }
 
     var durationHint: Hint? {
@@ -811,12 +812,12 @@ final class AppModel {
         }
     }
 
-    /// −/+: zur nächsten Viertelstunde in diese Richtung.
-    func adjustDuration(by step: Int) {
+    /// −/+: zur nächsten Stufe in diese Richtung; die Stufe ist die Einheit der Rundung, ohne Rundung
+    /// eine Viertelstunde.
+    func adjustDuration(by direction: Int) {
         let current: Int
         if case .minutes(let minutes) = durationResult { current = minutes } else { current = 0 }
-        let quarters = step > 0 ? current / 15 + 1 : (current + 14) / 15 - 1
-        let minutes = max(0, quarters * 15)
+        let minutes = DurationInput.stepped(current, by: direction, unit: preferences.durationRounding.step)
         draft.durationText = minutes > 0 ? DurationInput.format(minutes) : ""
     }
 

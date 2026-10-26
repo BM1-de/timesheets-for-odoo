@@ -83,13 +83,13 @@ struct NewEntrySection: View {
                         .foregroundStyle(.secondary)
                     Spacer(minLength: 8)
                     ControlGroup {
-                        Button { model.adjustDuration(by: -15) } label: { Image(systemName: "minus") }
-                            .accessibilityLabel("15 Minuten weniger")
-                        Button { model.adjustDuration(by: 15) } label: { Image(systemName: "plus") }
-                            .accessibilityLabel("15 Minuten mehr")
+                        Button { model.adjustDuration(by: -1) } label: { Image(systemName: "minus") }
+                            .accessibilityLabel(model.preferences.durationRounding.lessLabel)
+                        Button { model.adjustDuration(by: 1) } label: { Image(systemName: "plus") }
+                            .accessibilityLabel(model.preferences.durationRounding.moreLabel)
                     }
                     .frame(width: 72)
-                    .help("Dauer in Viertelstunden ändern")
+                    .help(model.preferences.durationRounding.stepHelp)
                 }
                 .disabled(fixed)
                 if isEditing {

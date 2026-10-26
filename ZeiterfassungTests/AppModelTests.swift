@@ -148,24 +148,35 @@ struct AppModelTests {
     @Test("Dauer: Rundung, Hinweise, −/+")
     func duration() async throws {
         let model = try await signedIn(FakeOdoo())
+        #expect(model.preferences.durationRounding == .off)
         model.draft.durationText = "1:20"
-        #expect(model.draftMinutes == 75)
-        #expect(model.durationHint == AppModel.Hint(text: "Wird als 1:15 Std. gebucht.", isProblem: false))
-        model.preferences.roundsToQuarterHour = false
         #expect(model.draftMinutes == 80)
         #expect(model.durationHint == nil)
+        model.preferences.durationRounding = .quarterHour
+        #expect(model.draftMinutes == 75)
+        #expect(model.durationHint == AppModel.Hint(text: "Wird als 1:15 Std. gebucht.", isProblem: false))
+        model.preferences.durationRounding = .hour
+        #expect(model.draftMinutes == 60)
+        #expect(model.durationHint == AppModel.Hint(text: "Wird als 1:00 Std. gebucht.", isProblem: false))
 
         model.draft.durationText = "abc"
         #expect(model.durationHint?.isProblem == true)
         #expect(model.draftMinutes == nil)
 
         model.draft.durationText = "0:20"
-        model.adjustDuration(by: 15)
-        #expect(model.draft.durationText == "0:30")
-        model.adjustDuration(by: -15)
-        model.adjustDuration(by: -15)
+        model.adjustDuration(by: 1)
+        #expect(model.draft.durationText == "1:00")
+        model.adjustDuration(by: -1)
         #expect(model.draft.durationText == "")
-        model.adjustDuration(by: -15)
+
+        model.preferences.durationRounding = .off
+        model.draft.durationText = "0:20"
+        model.adjustDuration(by: 1)
+        #expect(model.draft.durationText == "0:30")
+        model.adjustDuration(by: -1)
+        model.adjustDuration(by: -1)
+        #expect(model.draft.durationText == "")
+        model.adjustDuration(by: -1)
         #expect(model.draft.durationText == "")
     }
 

@@ -41,7 +41,8 @@ enum ScreenshotRenderer {
             await renderPanel(model, appearance: appearance, to: directory.appending(path: "fenster-\(name).png"))
         }
 
-        // Neuer Eintrag ausgefüllt
+        // Neuer Eintrag ausgefüllt, mit Rundung auf 15 Minuten
+        model.preferences.durationRounding = .quarterHour
         if let project = model.projects.first(where: { $0.id == 5 }) {
             model.selectProject(project)
             await model.loadTasks(projectID: project.id)

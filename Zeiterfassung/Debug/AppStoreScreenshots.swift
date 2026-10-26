@@ -55,6 +55,7 @@ enum AppStoreScreenshots {
         await ScreenshotRenderer.renderPanel(model, appearance: .aqua, to: day)
         compose(texts[0], panel: day, to: directory.appending(path: "1-tag.png"))
 
+        model.preferences.durationRounding = .quarterHour
         if let project = model.projects.first(where: { $0.id == 5 }) {
             model.selectProject(project)
             await model.loadTasks(projectID: project.id)

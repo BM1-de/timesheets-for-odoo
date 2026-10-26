@@ -44,7 +44,7 @@ Zeiterfassung für Odoo bringt deine Zeiterfassung in die Menüleiste: Uhrsymbol
 ZEITEINTRÄGE
 • Projekte mit Suche, die zuletzt verwendeten stehen oben
 • Aufgabe, Beschreibung und Dauer wie 1:30, 1,5 oder 90 min
-• Auf Wunsch auf Viertelstunden gerundet
+• Auf Wunsch auf 15, 30 oder 60 Minuten gerundet
 • Frühere Tage durchblättern und nachtragen
 • Einträge per Klick ändern oder löschen
 • Mehrere Firmen: Projekte nach Firma, Zwischensumme je Firma
@@ -80,7 +80,7 @@ Timesheets for Odoo puts your time tracking in the menu bar: click the clock ico
 TIME ENTRIES
 • Projects with search, recently used ones on top
 • Task, description and duration such as 1:30, 1.5 or 90 min
-• Optionally rounded to quarter hours
+• Optionally rounded to 15, 30 or 60 minutes
 • Browse earlier days and fill them in
 • Edit or delete entries with a click
 • Several companies: projects by company, subtotal per company
@@ -116,7 +116,7 @@ Feuilles de temps pour Odoo place votre suivi du temps dans la barre des menus :
 SAISIES DE TEMPS
 • Projets avec recherche, les plus récents en tête
 • Tâche, description et durée comme 1:30, 1,5 ou 90 min
-• Arrondi au quart d’heure si vous le souhaitez
+• Arrondi à 15, 30 ou 60 minutes si vous le souhaitez
 • Parcourir et compléter les jours précédents
 • Modifier ou supprimer une saisie d’un clic
 • Plusieurs sociétés : projets par société, sous-total par société
