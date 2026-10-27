@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.3.0 – 2026-10-27
 
 - Timer: “Start” at the top of the window starts the time right away; project, task and
   description can be chosen while it runs (click the project line) or when stopping, where the
@@ -18,6 +18,8 @@
   the nearest unit and never to zero. New installations don't round; the former switch “Round
   durations to quarter hours” becomes 15 minutes, so existing users keep what they had. The − and
   + buttons step by the chosen unit, without rounding by 15 minutes.
+- Fixed: at smaller sizes, as in the Dock or in Finder, the app icon had a grey box around its
+  tile.
 
 ## 0.2.0 – 2026-10-24
 
