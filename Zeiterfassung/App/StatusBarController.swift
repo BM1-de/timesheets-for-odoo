@@ -51,10 +51,10 @@ final class StatusBarController: NSObject {
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
         let content = model.menuBarContent
-        button.image = MenuBarIcon.image(isSignedIn: content.isSignedIn)
+        button.image = MenuBarIcon.image(content.symbol, isSignedIn: content.isSignedIn)
         button.title = content.text.isEmpty ? "" : " " + content.text
         button.setAccessibilityLabel(content.accessibilityLabel)
-        button.toolTip = content.isSignedIn ? nil : String(localized: "\(AppInfo.name): bitte anmelden")
+        button.toolTip = content.isSignedIn ? content.toolTip : String(localized: "\(AppInfo.name): bitte anmelden")
     }
 
     @objc private func statusItemClicked(_ sender: NSStatusBarButton) {
@@ -292,12 +292,17 @@ enum PanelMetrics {
     static let gapBelowMenuBar: CGFloat = 5
 }
 
-/// Uhr als Vorlagenbild, das sich wie jedes Menüleistensymbol an hell und dunkel anpasst.
+/// Uhr, Stoppuhr oder Person als Vorlagenbild, das sich wie jedes Menüleistensymbol an hell und dunkel anpasst.
 enum MenuBarIcon {
     @MainActor
-    static func image(isSignedIn: Bool) -> NSImage? {
+    static func image(_ symbol: AppModel.MenuBarContent.Symbol = .clock, isSignedIn: Bool) -> NSImage? {
         let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        let symbolName = isSignedIn ? "clock" : "clock.badge.questionmark"
+        let symbolName = switch symbol {
+        case _ where !isSignedIn: "clock.badge.questionmark"
+        case .clock: "clock"
+        case .stopwatch: "stopwatch"
+        case .person: "person"
+        }
         let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: AppInfo.name)?
             .withSymbolConfiguration(configuration)
         symbol?.isTemplate = true

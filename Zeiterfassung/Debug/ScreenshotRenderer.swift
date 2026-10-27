@@ -79,6 +79,10 @@ enum ScreenshotRenderer {
         LoginItem.stateForScreenshots = true
         await render(SettingsView().environment(model), appearance: .aqua,
                      to: directory.appending(path: "einstellungen.png"))
+        model.preferences.menuBarTime = .attendanceToday
+        await render(SettingsView().environment(model), appearance: .darkAqua,
+                     to: directory.appending(path: "einstellungen-anwesenheit-dunkel.png"))
+        model.preferences.menuBarTime = .automatic
 
         // Einstellungen ohne Odoo-App Anwesenheiten
         let limited = makeDemoOdoo()
@@ -195,6 +199,16 @@ enum ScreenshotRenderer {
         await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-zuordnen.png"))
         model.cancelEditing()
         await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-projekt-fehlt.png"))
+
+        // Nach 20 Sekunden gestoppt: Die Zeit kommt ins Formular und bleibt stehen, bis sie gebucht oder verworfen ist.
+        model.preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: 5,
+                                                                  projectName: "Website-Relaunch (Musterhaus GmbH)",
+                                                                  taskID: 52, taskName: "Design", description: "Logo prüfen",
+                                                                  start: now.addingTimeInterval(-20))
+        await model.stopTimer()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-kurz-formular.png"))
+        model.cancelEditing()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-kurz.png"))
         model.preferences.runningTimer = nil
         model.dismissTimerNotice()
         await model.refresh(force: true)

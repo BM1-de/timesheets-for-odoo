@@ -42,14 +42,28 @@ struct PreferencesTests {
         #expect(Preferences(defaults: defaults).durationRounding == .hour)
     }
 
-    @Test("Menüleiste: laufende Projektzeit ab Werk an, die Anzeige bis Version 0.2 wird entfernt")
+    @Test("Menüleiste: ab Werk „Automatisch“, die Anzeige bis Version 0.2 wird entfernt")
     func menuBarDefaults() {
         let defaults = ScratchDefaults.make("zeiterfassung-tests")
         defaults.set("both", forKey: "menuBar.display")
         defaults.set(false, forKey: "menuBar.checkedInDot")
-        #expect(Preferences(defaults: defaults).showsRunningTime)
+        #expect(Preferences(defaults: defaults).menuBarTime == .automatic)
         #expect(defaults.object(forKey: "menuBar.display") == nil)
         #expect(defaults.object(forKey: "menuBar.checkedInDot") == nil)
+        Preferences(defaults: defaults).menuBarTime = .attendanceToday
+        #expect(Preferences(defaults: defaults).menuBarTime == .attendanceToday)
+    }
+
+    @Test("Menüleiste: wer bis Version 0.3 die laufende Projektzeit ausgeschaltet hatte, sieht weiter nur das Symbol")
+    func menuBarFromRunningTimeSwitch() {
+        let off = ScratchDefaults.make("zeiterfassung-tests")
+        off.set(false, forKey: "menuBar.runningTime")
+        #expect(Preferences(defaults: off).menuBarTime == .symbolOnly)
+        #expect(off.object(forKey: "menuBar.runningTime") == nil)
+        #expect(off.string(forKey: "menuBar.time") == "symbolOnly")
+        let on = ScratchDefaults.make("zeiterfassung-tests")
+        on.set(true, forKey: "menuBar.runningTime")
+        #expect(Preferences(defaults: on).menuBarTime == .automatic)
     }
 
     @Test("die laufende Projektzeit übersteht einen Neustart")

@@ -2,7 +2,8 @@
 
 Eigene Stunden und Anwesenheit in Odoo direkt aus der Menüleiste des Mac erfassen: Projekt und
 Aufgabe wählen, Dauer eintragen oder die Zeit mit Starten und Stoppen messen. Ein- und
-Ausstempeln mit einem Klick; läuft eine Projektzeit, zählt sie in der Menüleiste mit.
+Ausstempeln mit einem Klick; in der Menüleiste steht wahlweise die laufende Projektzeit, die
+Projektzeit von heute oder die Anwesenheit.
 
 > **Alpha:** Die App ist neu und wird bei der Baumgärtner Marketing GmbH im Alltag erprobt. Sie
 > wird ohne Gewährleistung bereitgestellt (AGPL-3.0, Abschnitte 15 und 16).
@@ -24,8 +25,9 @@ Ausstempeln mit einem Klick; läuft eine Projektzeit, zählt sie in der Menülei
   Formular, das dann mit der gemessenen Dauer bucht. Ohne Dauer startet „Starten“ im Formular die
   Zeit für Projekt, Aufgabe und Beschreibung; ▶ an einem Eintrag startet dieselbe Arbeit erneut.
   Es läuft immer nur eine Zeit, ein neuer Start bucht die laufende. Stoppen bucht sofort auf den
-  Tag, an dem die Zeit begann, gerundet wie eingestellt; unter einer Minute bucht die App nichts.
-  Die Zeit läuft weiter, wenn die App beendet wird.
+  Tag, an dem die Zeit begann, gerundet wie eingestellt; lief sie keine Minute, kommt sie wie eine
+  Zeit ohne Projekt ins Formular, verloren geht nichts. Die Zeit läuft weiter, wenn die App
+  beendet wird.
 - **Bearbeiten:** Ein Klick auf einen Eintrag öffnet ihn unten im Formular, auch um ihn auf einen
   anderen Tag zu legen; löschen geht nach einer Rückfrage. Abgerechnete Einträge sperrt Odoo bis
   auf die Beschreibung, die App zeigt das.
@@ -38,7 +40,9 @@ Ausstempeln mit einem Klick; läuft eine Projektzeit, zählt sie in der Menülei
   mehreren Firmen einen Mitarbeiter hat, wählt in den Einstellungen, für welche Firma er stempelt.
 - **Modul „Arbeitszeitgesetz“ (optional):** Ist es in Odoo installiert, erkennt die App die
   Pausen, die Odoo selbst einfügt, und rechnet beim Verschieben einer Pause vor, ob sie reicht.
-- **Menüleiste:** nur das Uhrsymbol; läuft eine Projektzeit, daneben ihre Stunden und Minuten.
+- **Menüleiste:** neben dem Symbol wahlweise die laufende Projektzeit, die Projektzeit von heute
+  oder die Anwesenheit; ab Werk „Automatisch“, also die laufende Projektzeit und sonst die von
+  heute. Stoppuhr, Uhr oder Person zeigen, welche Zeit dasteht, der Tooltip am Symbol nennt alle.
 - **Funktionen einzeln:** Zeiterfassung und Anwesenheit lassen sich getrennt einschalten. Beim
   Verbinden prüft die App, welche Odoo-Apps installiert sind und welche Rechte der Benutzer hat;
   was fehlt, bleibt mit Begründung ausgeschaltet.
@@ -239,6 +243,6 @@ Mitwirkende, MIT-Lizenz und weitere freie Lizenzen); der Lizenztext liegt in der
 
 *English: A macOS menu bar app to log your own timesheets and attendance in Odoo 17–19: pick
 project and task, enter the duration or time it with start and stop, check in and out with one
-click; a running timer counts in the menu bar. Uses JSON-2 (Odoo 19) or JSON-RPC (Odoo 17/18) with a personal API key stored in
+click; the menu bar shows the running timer, today's project time or attendance. Uses JSON-2 (Odoo 19) or JSON-RPC (Odoo 17/18) with a personal API key stored in
 the Keychain. Signed and notarized DMG releases, updates via Sparkle. User interface in German,
 English and French. Alpha, AGPL-3.0, no warranty. Not affiliated with Odoo S.A.*

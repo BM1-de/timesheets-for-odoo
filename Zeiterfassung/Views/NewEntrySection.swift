@@ -164,6 +164,11 @@ struct NewEntrySection: View {
                         .font(.callout)
                         .foregroundStyle(.secondary)
                         .padding(.horizontal, 6)
+                } else if model.offersTimerStart, model.runningTimerBlocksStart {
+                    Text("Die gestoppte Zeit erst buchen oder verwerfen, dann startet eine neue.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
                 } else if model.runningTimer != nil, model.canStartTimer {
                     Text("Starten bucht vorher die laufende Zeit.")
                         .font(.callout)

@@ -13,9 +13,16 @@ struct RunningTimerSection: View {
             if let timer = model.runningTimer {
                 RunningTimerCard(timer: timer)
                 if timer.end != nil, model.timerEditing == nil {
-                    if timer.projectID == nil, model.timerError == nil {
-                        MissingProjectNote { model.beginBookingTimer() }
-                    } else {
+                    switch model.stoppedTimerReason {
+                    case .project:
+                        StoppedTimerNote(text: "Zum Buchen fehlt noch das Projekt.", button: "Projekt wählen") {
+                            model.beginBookingTimer()
+                        }
+                    case .short:
+                        StoppedTimerNote(text: "Kürzer als eine Minute, noch nicht gebucht.", button: "Buchen …") {
+                            model.beginBookingTimer()
+                        }
+                    case nil:
                         ErrorBanner(title: "Projektzeit konnte nicht gebucht werden",
                                     message: model.timerError ?? String(localized: "Die Zeit steht still, bis sie gebucht ist."),
                                     retry: model.isStoppingTimer ? nil : { Task { await model.stopTimer() } })
@@ -127,20 +134,22 @@ private struct RunningTimerCard: View {
     }
 }
 
-/// Gestoppt ohne Projekt: Gebucht wird erst, wenn es gewählt ist.
-private struct MissingProjectNote: View {
-    let choose: () -> Void
+/// Gestoppt, aber noch nicht gebucht: ohne Projekt oder nach weniger als einer Minute. Gebucht wird im Formular.
+private struct StoppedTimerNote: View {
+    let text: LocalizedStringKey
+    let button: LocalizedStringKey
+    let action: () -> Void
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             Image(systemName: "exclamationmark.circle.fill")
                 .foregroundStyle(.orange)
                 .accessibilityHidden(true)
-            Text("Zum Buchen fehlt noch das Projekt.")
+            Text(text)
                 .font(.callout)
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 4)
-            Button("Projekt wählen", action: choose)
+            Button(button, action: action)
                 .controlSize(.small)
         }
         .padding(.vertical, 7)

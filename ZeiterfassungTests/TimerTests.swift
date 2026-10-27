@@ -48,6 +48,7 @@ struct TimerTests {
         #expect(model.draft.description.isEmpty)
         #expect(model.draft.projectID == 3 && model.draft.taskID == 32)
         #expect(model.menuBarContent.text == "0:00")
+        #expect(model.menuBarContent.symbol == .stopwatch)
         #expect(model.timerStartText == "seit 14:52")
 
         clock.advance(by: 42 * 60 + 17)
@@ -55,9 +56,15 @@ struct TimerTests {
         #expect(model.timerSeconds() == 42 * 60 + 17)
         #expect(model.menuBarContent.text == "0:42")
         #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Projektzeit läuft seit 42 Minuten")
-        model.preferences.showsRunningTime = false
+        #expect(model.menuBarContent.toolTip?.hasPrefix(
+            "Läuft 0:42 seit 14:52 · Kundenmagazin (Beispiel AG) › Layout\nProjektzeit heute 0:42 Std.") == true)
+        model.preferences.menuBarTime = .projectToday
+        #expect(model.menuBarContent.text == "0:42")
+        #expect(model.menuBarContent.symbol == .clock)
+        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Projektzeit heute 42 Minuten")
+        model.preferences.menuBarTime = .symbolOnly
         #expect(model.menuBarContent.text.isEmpty)
-        model.preferences.showsRunningTime = true
+        model.preferences.menuBarTime = .automatic
 
         model.timerDescription = "Titelseite und Inhalt"
         await model.stopTimer()
@@ -70,10 +77,14 @@ struct TimerTests {
         #expect(line.hours == 0.75)
         #expect(line.date == "2026-10-23")
         #expect(model.entries.map(\.minutes) == [45])
+        // Ohne laufende Zeit zeigt „Automatisch“ die Projektzeit von heute.
+        #expect(model.menuBarContent.text == "0:45")
+        #expect(model.menuBarContent.symbol == .clock)
+        model.preferences.menuBarTime = .runningProject
         #expect(model.menuBarContent.text.isEmpty)
     }
 
-    @Test("unter einer Minute bucht nichts, Verwerfen fragt erst ab einer Minute")
+    @Test("unter einer Minute: Stoppen behält die Zeit fürs Formular, ein neuer Start verwirft sie; Verwerfen fragt erst ab einer Minute")
     func shortAndDiscarded() async throws {
         let odoo = FakeOdoo()
         let clock = MovingClock()
@@ -83,15 +94,26 @@ struct TimerTests {
         await model.startTimer()
         clock.advance(by: 50)
         await model.stopTimer()
-        #expect(model.runningTimer == nil)
-        #expect(model.timerNotice?.text == "Weniger als eine Minute, nichts gebucht.")
-
-        await model.startTimer()
-        clock.advance(by: 30)
+        #expect(model.runningTimer?.end == TestClock.now.addingTimeInterval(50))
+        #expect(model.timerNotice == nil)
+        #expect(model.timerEditing == .booking)
+        #expect(model.draft.durationText == "0:01")
+        #expect(model.draft.projectID == 3 && model.draft.taskID == 32)
+        model.cancelEditing()
+        #expect(model.stoppedTimerReason == .short)
+        #expect(!model.canStartTimer)
         model.requestDiscardTimer()
         #expect(model.pendingDeletion == nil)
         #expect(model.runningTimer == nil)
         #expect(model.timerNotice?.text == "Laufende Zeit verworfen, nichts gebucht.")
+
+        await model.startTimer()
+        clock.advance(by: 30)
+        await model.startTimer()
+        #expect(model.timerNotice?.text == "Weniger als eine Minute, nichts gebucht.")
+        #expect(model.runningTimer?.start == TestClock.now.addingTimeInterval(80))
+        model.requestDiscardTimer()
+        #expect(model.runningTimer == nil)
 
         model.draft.description = "Titelseite"
         await model.startTimer()

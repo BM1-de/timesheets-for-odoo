@@ -636,6 +636,22 @@
         }
       }
     },
+    "Alles, was heute auf Projekte gebucht ist, die laufende Zeit mitgezählt: %@ 6:12." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Everything booked to projects today, including the running timer: %@ 6:12."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tout ce qui est enregistré sur des projets aujourd’hui, minuteur en cours compris : %@ 6:12."
+          }
+        }
+      }
+    },
     "Allgemein" : {
       "localizations" : {
         "en" : {
@@ -748,6 +764,22 @@
         }
       }
     },
+    "Anwesend heute %@ Std." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance today %@ h"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Présence aujourd’hui %@ h"
+          }
+        }
+      }
+    },
     "Anwesend seit %@" : {
       "localizations" : {
         "en" : {
@@ -764,6 +796,22 @@
         }
       }
     },
+    "Anwesend seit %@ · heute %@ Std." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Checked in at %@ · today %@ h"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrivé à %@ · aujourd’hui %@ h"
+          }
+        }
+      }
+    },
     "Anwesenheit" : {
       "localizations" : {
         "en" : {
@@ -776,6 +824,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Présence"
+          }
+        }
+      }
+    },
+    "Anwesenheit heute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attendance today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Présence aujourd’hui"
+          }
+        }
+      }
+    },
+    "Anwesenheit heute %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "attendance today %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "présence aujourd’hui %@"
           }
         }
       }
@@ -920,6 +1000,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Départ"
+          }
+        }
+      }
+    },
+    "Automatisch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatic"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Automatique"
           }
         }
       }
@@ -1192,6 +1288,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enregistrer"
+          }
+        }
+      }
+    },
+    "Buchen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer…"
           }
         }
       }
@@ -1768,6 +1880,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le minuteur reste arrêté jusqu’à l’enregistrement du temps."
+          }
+        }
+      }
+    },
+    "Die gestoppte Zeit erst buchen oder verwerfen, dann startet eine neue." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book or discard the stopped time first, then a new one starts."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrez ou abandonnez d’abord le temps arrêté, puis un nouveau démarre."
           }
         }
       }
@@ -2364,6 +2492,22 @@
         }
       }
     },
+    "Gestoppt bei %@ · %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stopped at %@ · %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêté à %@ · %@"
+          }
+        }
+      }
+    },
     "GitHub" : {
       "shouldTranslate" : false
     },
@@ -2411,6 +2555,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Aujourd’hui %@ h · Pause %@"
+          }
+        }
+      }
+    },
+    "Heute nicht eingestempelt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Not checked in today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas pointé aujourd’hui"
           }
         }
       }
@@ -2719,6 +2879,22 @@
         }
       }
     },
+    "Keine Zeit, nur das Symbol %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No time, just the icon %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pas de temps, seulement l’icône %@."
+          }
+        }
+      }
+    },
     "Keine offenen Aufgaben – Buchung auf das Projekt" : {
       "localizations" : {
         "en" : {
@@ -2815,6 +2991,22 @@
         }
       }
     },
+    "Kürzer als eine Minute, noch nicht gebucht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less than a minute, not booked yet."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moins d’une minute, pas encore enregistré."
+          }
+        }
+      }
+    },
     "Laufende Projektzeit" : {
       "localizations" : {
         "en" : {
@@ -2827,22 +3019,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Minuteur en cours"
-          }
-        }
-      }
-    },
-    "Laufende Projektzeit anzeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show running timer"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher le minuteur en cours"
           }
         }
       }
@@ -2927,18 +3103,34 @@
         }
       }
     },
-    "Läuft keine Projektzeit, zeigt die Menüleiste nur das Symbol." : {
+    "Läuft %@ seit %@ · %@" : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "When no timer is running, the menu bar shows only the icon."
+            "value" : "Timer %@ since %@ · %@"
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Sans minuteur en cours, la barre des menus n’affiche que l’icône."
+            "value" : "Minuteur %@ depuis %@ · %@"
+          }
+        }
+      }
+    },
+    "Läuft eine Projektzeit, steht sie mit der Stoppuhr da: %@ 0:42. Sonst die Projektzeit von heute mit der Uhr: %@ 5:30." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "While a timer is running, it shows with the stopwatch: %@ 0:42. Otherwise today’s project time with the clock: %@ 5:30."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Quand un minuteur tourne, il s’affiche avec le chronomètre : %@ 0:42. Sinon le temps de projet du jour avec l’horloge : %@ 5:30."
           }
         }
       }
@@ -3195,6 +3387,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pas encore saisi sur des projets"
+          }
+        }
+      }
+    },
+    "Nur das Symbol" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icon only"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Icône seulement"
+          }
+        }
+      }
+    },
+    "Nur solange eine Projektzeit läuft, mit der Stoppuhr: %@ 0:42. Sonst nur das Symbol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Only while a timer is running, with the stopwatch: %@ 0:42. Otherwise just the icon."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Seulement quand un minuteur tourne, avec le chronomètre : %@ 0:42. Sinon seulement l’icône."
           }
         }
       }
@@ -3710,6 +3934,54 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "minuteur à %@, pas encore enregistré"
+          }
+        }
+      }
+    },
+    "Projektzeit heute" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Project time today"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temps de projet aujourd’hui"
+          }
+        }
+      }
+    },
+    "Projektzeit heute %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "project time today %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "temps de projet aujourd’hui %@"
+          }
+        }
+      }
+    },
+    "Projektzeit heute %@ Std." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Project time today %@ h"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temps de projet aujourd’hui %@ h"
           }
         }
       }
@@ -4626,6 +4898,22 @@
         }
       }
     },
+    "Wie lange du heute eingestempelt bist, Pausen nicht mitgezählt: %@ 6:50." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "How long you have been checked in today, breaks not counted: %@ 6:50."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Votre temps de présence aujourd’hui, pauses non comprises : %@ 6:50."
+          }
+        }
+      }
+    },
     "Wiederholen" : {
       "localizations" : {
         "en" : {
@@ -4706,6 +4994,22 @@
         }
       }
     },
+    "Zeigst du auf das Symbol in der Menüleiste, nennt ein Tooltip alle Zeiten von heute." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Point at the icon in the menu bar to see all of today’s times."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Pointez sur l’icône dans la barre des menus pour voir tous les temps du jour."
+          }
+        }
+      }
+    },
     "Zeit buchen" : {
       "localizations" : {
         "en" : {
@@ -4718,6 +5022,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Enregistrer le temps"
+          }
+        }
+      }
+    },
+    "Zeit in der Menüleiste" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Time in the menu bar"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Temps dans la barre des menus"
           }
         }
       }

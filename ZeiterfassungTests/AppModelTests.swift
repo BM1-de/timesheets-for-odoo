@@ -103,7 +103,7 @@ struct AppModelTests {
         #expect(model.draft.projectID == 3 && model.draft.taskID == 32)
         #expect(model.entries.map(\.minutes) == [90])
         #expect(model.bookedMinutes == 90)
-        #expect(model.menuBarContent.text.isEmpty)
+        #expect(model.menuBarContent.text == "1:30")
         #expect(model.recentProjectIDs.first == 3)
         #expect(odoo.withLock { odoo.lines.first?.date } == "2026-10-23")
     }
@@ -180,7 +180,7 @@ struct AppModelTests {
         #expect(model.draft.durationText == "")
     }
 
-    @Test("Anwesenheit: stempeln und Zusammenfassung, nicht in der Menüleiste")
+    @Test("Anwesenheit: stempeln und Zusammenfassung, in der Menüleiste auf Wunsch")
     func attendance() async throws {
         let odoo = FakeOdoo()
         // Heute 08:12–12:05 (Ortszeit), seit 12:47 wieder anwesend.
@@ -198,6 +198,11 @@ struct AppModelTests {
         #expect(summary.buttonTitle == "Ausstempeln")
         #expect(summary.unbookedText == "5:58 Std.")
         #expect(model.menuBarContent.text.isEmpty)
+        #expect(model.menuBarContent.toolTip == "Projektzeit heute 0:00 Std.\nAnwesend seit 12:47 · heute 5:58 Std.")
+        model.preferences.menuBarTime = .attendanceToday
+        #expect(model.menuBarContent.text == "5:58")
+        #expect(model.menuBarContent.symbol == .person)
+        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Anwesenheit heute 5 Stunden 58 Minuten")
 
         await model.toggleAttendance()
         #expect(model.stampError == nil)
@@ -205,6 +210,8 @@ struct AppModelTests {
         #expect(!summary.isRunning)
         #expect(summary.title == "Ausgestempelt um 14:52")
         #expect(summary.buttonTitle == "Einstempeln")
+        #expect(model.menuBarContent.text == "5:58")
+        #expect(model.menuBarContent.toolTip == "Projektzeit heute 0:00 Std.\nAnwesend heute 5:58 Std.")
     }
 
     @Test("ohne Recht zum Stempeln nur Anzeige mit Hinweis")
@@ -219,7 +226,7 @@ struct AppModelTests {
         #expect(summary.title == "Nicht eingestempelt")
     }
 
-    @Test("nur Anwesenheit: Zeiten als Liste, in der Menüleiste nur das Symbol")
+    @Test("nur Anwesenheit: Zeiten als Liste, in der Menüleiste die Anwesenheit")
     func attendanceOnly() async throws {
         let odoo = FakeOdoo()
         odoo.withLock {
@@ -229,7 +236,10 @@ struct AppModelTests {
         #expect(model.setTimesheetsEnabled(false))
         await model.refresh(force: true)
         #expect(!model.timesheetsActive)
-        #expect(model.menuBarContent.text.isEmpty)
+        #expect(model.effectiveMenuBarTime == .attendanceToday)
+        #expect(model.menuBarContent.text == "3:53")
+        #expect(model.menuBarContent.symbol == .person)
+        #expect(model.menuBarContent.toolTip == "Anwesend heute 3:53 Std.")
         #expect(model.attendanceSummary.rows.map(\.range) == ["08:12 – 12:05"])
         // Die letzte Funktion bleibt an.
         #expect(!model.setAttendanceEnabled(false))

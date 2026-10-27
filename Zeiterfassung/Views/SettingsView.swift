@@ -61,12 +61,29 @@ struct SettingsView: View {
             }
 
             Section {
-                Toggle("Laufende Projektzeit anzeigen", isOn: $preferences.showsRunningTime)
-                    .disabled(!model.timesheetsActive)
+                Picker(selection: menuBarTimeBinding) {
+                    if model.timesheetsActive {
+                        Text("Automatisch").tag(Preferences.MenuBarTime.automatic)
+                        Text("Laufende Projektzeit").tag(Preferences.MenuBarTime.runningProject)
+                        Text("Projektzeit heute").tag(Preferences.MenuBarTime.projectToday)
+                    }
+                    if model.attendanceActive {
+                        Text("Anwesenheit heute").tag(Preferences.MenuBarTime.attendanceToday)
+                    }
+                    Text("Nur das Symbol").tag(Preferences.MenuBarTime.symbolOnly)
+                } label: {
+                    VStack(alignment: .leading, spacing: 3) {
+                        Text("Zeit in der Menüleiste")
+                        menuBarTimeExplanation
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
             } header: {
                 Text("Menüleiste")
             } footer: {
-                Text("Läuft keine Projektzeit, zeigt die Menüleiste nur das Symbol.")
+                Text("Zeigst du auf das Symbol in der Menüleiste, nennt ein Tooltip alle Zeiten von heute.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -184,6 +201,33 @@ struct SettingsView: View {
 
     private var approvalHint: String {
         String(localized: "Bitte in den Systemeinstellungen unter Allgemein › Anmeldeobjekte erlauben.")
+    }
+
+    /// Ist die Funktion der gewählten Zeit ausgeschaltet, steht die Auswahl auf dem, was die Menüleiste
+    /// stattdessen zeigt; die Wahl selbst bleibt gespeichert.
+    private var menuBarTimeBinding: Binding<Preferences.MenuBarTime> {
+        Binding(
+            get: { model.effectiveMenuBarTime },
+            set: { model.preferences.menuBarTime = $0 }
+        )
+    }
+
+    /// Die gewählte Zeit, mit dem Zeichen, das in der Menüleiste davor steht.
+    private var menuBarTimeExplanation: Text {
+        let stopwatch = Image(systemName: "stopwatch")
+        let clock = Image(systemName: "clock")
+        switch model.effectiveMenuBarTime {
+        case .automatic:
+            return Text("Läuft eine Projektzeit, steht sie mit der Stoppuhr da: \(stopwatch) 0:42. Sonst die Projektzeit von heute mit der Uhr: \(clock) 5:30.")
+        case .runningProject:
+            return Text("Nur solange eine Projektzeit läuft, mit der Stoppuhr: \(stopwatch) 0:42. Sonst nur das Symbol.")
+        case .projectToday:
+            return Text("Alles, was heute auf Projekte gebucht ist, die laufende Zeit mitgezählt: \(clock) 6:12.")
+        case .attendanceToday:
+            return Text("Wie lange du heute eingestempelt bist, Pausen nicht mitgezählt: \(Image(systemName: "person")) 6:50.")
+        case .symbolOnly:
+            return Text("Keine Zeit, nur das Symbol \(clock).")
+        }
     }
 
     private var timesheetsBinding: Binding<Bool> {

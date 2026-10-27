@@ -47,6 +47,16 @@ final class Preferences {
         }
     }
 
+    /// Zeit neben dem Symbol in der Menüleiste.
+    enum MenuBarTime: String, CaseIterable, Sendable {
+        /// Läuft eine Projektzeit, sie; sonst die Projektzeit von heute.
+        case automatic
+        case runningProject
+        case projectToday
+        case attendanceToday
+        case symbolOnly
+    }
+
     /// Laufende Projektzeit. Sie steht hier, damit sie einen Neustart der App übersteht.
     struct RunningTimer: Codable, Equatable, Sendable {
         /// Konto, zu dem die Zeit gehört (`OdooSession.keychainAccount`).
@@ -77,8 +87,7 @@ final class Preferences {
 
     var timesheetsEnabled: Bool { didSet { defaults.set(timesheetsEnabled, forKey: Key.timesheets) } }
     var attendanceEnabled: Bool { didSet { defaults.set(attendanceEnabled, forKey: Key.attendance) } }
-    /// Laufende Projektzeit neben dem Symbol in der Menüleiste.
-    var showsRunningTime: Bool { didSet { defaults.set(showsRunningTime, forKey: Key.runningTime) } }
+    var menuBarTime: MenuBarTime { didSet { defaults.set(menuBarTime.rawValue, forKey: Key.menuBarTime) } }
     var runningTimer: RunningTimer? { didSet { store(runningTimer, forKey: Key.runningTimer) } }
     var durationRounding: DurationRounding { didSet { defaults.set(durationRounding.rawValue, forKey: Key.durationRounding) } }
     var session: OdooSession? { didSet { store(session, forKey: Key.session) } }
@@ -96,7 +105,7 @@ final class Preferences {
         self.defaults = defaults
         timesheetsEnabled = defaults.object(forKey: Key.timesheets) as? Bool ?? true
         attendanceEnabled = defaults.object(forKey: Key.attendance) as? Bool ?? true
-        showsRunningTime = defaults.object(forKey: Key.runningTime) as? Bool ?? true
+        menuBarTime = Self.menuBarTime(in: defaults)
         runningTimer = Self.load(RunningTimer.self, from: defaults, forKey: Key.runningTimer)
         durationRounding = Self.durationRounding(in: defaults)
         session = Self.load(OdooSession.self, from: defaults, forKey: Key.session)
@@ -111,6 +120,8 @@ final class Preferences {
     private enum Key {
         static let timesheets = "feature.timesheets"
         static let attendance = "feature.attendance"
+        static let menuBarTime = "menuBar.time"
+        /// Bis Version 0.3 der Schalter „Laufende Projektzeit anzeigen“, nur noch zum Übernehmen.
         static let runningTime = "menuBar.runningTime"
         static let runningTimer = "timer.running"
         static let durationRounding = "duration.rounding"
@@ -124,6 +135,16 @@ final class Preferences {
         static let attendanceEmployee = "attendance.employee"
         /// Bis Version 0.2: gebuchte Stunden oder Anwesenheit in der Menüleiste, grüner Punkt beim Einstempeln.
         static let retired = ["menuBar.display", "menuBar.checkedInDot"]
+    }
+
+    /// Bis Version 0.3 gab es nur den Schalter „Laufende Projektzeit anzeigen“, ab Werk an. Wer ihn
+    /// ausgeschaltet hat, sieht weiter nur das Symbol; sonst gilt „Automatisch“.
+    private static func menuBarTime(in defaults: UserDefaults) -> MenuBarTime {
+        if let value = defaults.string(forKey: Key.menuBarTime) { return MenuBarTime(rawValue: value) ?? .automatic }
+        let time: MenuBarTime = defaults.object(forKey: Key.runningTime) as? Bool == false ? .symbolOnly : .automatic
+        defaults.set(time.rawValue, forKey: Key.menuBarTime)
+        defaults.removeObject(forKey: Key.runningTime)
+        return time
     }
 
     /// Bis Version 0.2 gab es nur den Schalter „Dauer auf Viertelstunden runden“, ab Werk an. Wer sich

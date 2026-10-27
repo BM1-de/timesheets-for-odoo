@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased
+
+- Menu bar: Settings › Menu bar › “Time in the menu bar” chooses what stands next to the icon:
+  “Automatic” (the running timer, otherwise today's project time), the running timer only,
+  today's project time with the running timer counted, today's attendance, or the icon only. A
+  stopwatch marks the running timer, a clock today's project time, a person the attendance;
+  pointing at the icon lists all of today's times in a tooltip. Whoever had switched off “Show
+  running timer” keeps the icon only, everyone else gets “Automatic”. With only attendance
+  switched on, the menu bar shows today's attendance.
+- Stopping never discards the time: under a minute it goes to the form with the measured
+  duration, at least 0:01, like a timer without a project; book it there or discard it with the
+  trash. Until then no new timer starts. Starting another timer still discards a running one
+  that is under a minute.
+
 ## 0.3.0 – 2026-10-27
 
 - Timer: “Start” at the top of the window starts the time right away; project, task and

@@ -48,9 +48,18 @@ final class AppModel {
     }
 
     struct MenuBarContent: Equatable {
+        /// Zeichen vor der Zeit: die Uhr für die Projektzeit von heute und ohne Zeit, die Stoppuhr für die
+        /// laufende Projektzeit, die Person für die Anwesenheit.
+        enum Symbol: Equatable {
+            case clock, stopwatch, person
+        }
+
+        var symbol: Symbol = .clock
         var text: String
         var isSignedIn: Bool
         var accessibilityLabel: String
+        /// Alle Zeiten von heute, je eine Zeile.
+        var toolTip: String?
     }
 
     struct AttendanceSummary: Equatable {
@@ -645,11 +654,10 @@ final class AppModel {
         }
     }
 
-    /// Alle 20 Sekunden; läuft eine Projektzeit, auch zu jeder ihrer vollen Minuten, damit die Menüleiste
-    /// mitzählt.
+    /// Alle 20 Sekunden; zählt die Menüleiste eine Zeit mit, auch zu jeder ihrer vollen Minuten.
     private var tickDelay: Duration {
-        guard let timer = runningTimer, timer.end == nil else { return .seconds(20) }
-        let intoMinute = clock().timeIntervalSince(timer.start).truncatingRemainder(dividingBy: 60)
+        guard let start = menuBarCountingStart else { return .seconds(20) }
+        let intoMinute = clock().timeIntervalSince(start).truncatingRemainder(dividingBy: 60)
         return .seconds(min(20, 60 - intoMinute + 0.05))
     }
 
@@ -1643,6 +1651,24 @@ final class AppModel {
     /// Die Zeit läuft ohne Projekt; es kommt spätestens beim Stoppen dazu.
     var runningTimerLacksProject: Bool { runningTimer.map { $0.projectID == nil } ?? false }
 
+    /// Eine Zeit ohne Projekt oder eine gestoppte von weniger als einer Minute ließe sich beim Start einer neuen
+    /// nicht buchen: Solange sie steht, startet keine neue.
+    var runningTimerBlocksStart: Bool { runningTimerLacksProject || stoppedTimerReason == .short }
+
+    /// Warum eine gestoppte Zeit noch nicht gebucht ist, solange kein Fehler dahintersteckt.
+    enum StoppedTimerReason {
+        /// Ohne Projekt gestartet.
+        case project
+        /// Lief keine Minute.
+        case short
+    }
+
+    var stoppedTimerReason: StoppedTimerReason? {
+        guard let timer = runningTimer, let end = timer.end, timerError == nil else { return nil }
+        if timer.projectID == nil { return .project }
+        return Self.seconds(of: timer, until: end) < 60 ? .short : nil
+    }
+
     /// „Projekt › Aufgabe“ der laufenden Zeit, ohne Projekt „Projekt fehlt“.
     var timerPathText: String {
         guard let timer = runningTimer else { return "" }
@@ -1686,9 +1712,9 @@ final class AppModel {
     var offersTimerStart: Bool { timesheetsActive && editingEntry == nil && timerEditing == nil && isShowingToday }
 
     /// Starten geht ohne Dauer, mit Projekt (wo nötig mit Aufgabe) oder ohne. Läuft schon eine Zeit ohne
-    /// Projekt, startet keine neue: Die laufende ließe sich nicht buchen.
+    /// Projekt oder wartet eine kurze aufs Buchen, startet keine neue: Die laufende ließe sich nicht buchen.
     var canStartTimer: Bool {
-        guard offersTimerStart, !isSaving, !isStoppingTimer, !runningTimerLacksProject,
+        guard offersTimerStart, !isSaving, !isStoppingTimer, !runningTimerBlocksStart,
               durationResult == .empty else { return false }
         return draft.projectID == nil || !taskIsRequired || draft.taskID != nil
     }
@@ -1717,7 +1743,7 @@ final class AppModel {
     /// Erneut starten geht, solange das Projekt des Eintrags Buchungen annimmt und nicht genau diese Zeit
     /// schon läuft.
     func canStartTimer(like entry: TimesheetEntry) -> Bool {
-        guard timesheetsActive, !isStoppingTimer, !runningTimerLacksProject, let projectID = entry.project?.id,
+        guard timesheetsActive, !isStoppingTimer, !runningTimerBlocksStart, let projectID = entry.project?.id,
               projects.contains(where: { $0.id == projectID }) else { return false }
         guard let timer = runningTimer, timer.end == nil else { return true }
         return !(timer.projectID == projectID && timer.taskID == entry.task?.id && timer.description == entry.description)
@@ -1759,9 +1785,10 @@ final class AppModel {
         return true
     }
 
-    /// Stoppt die Zeit und bucht sie. Fehlen Projekt oder Aufgabe, kommt sie dafür ins Formular.
+    /// Stoppt die Zeit und bucht sie. Fehlen Projekt oder Aufgabe oder lief sie keine Minute, kommt sie dafür
+    /// ins Formular; verloren geht nichts.
     func stopTimer() async {
-        switch await bookTimer(until: clock()) {
+        switch await bookTimer(until: clock(), keepsShort: true) {
         case .booked: await refresh(force: true)
         case .needsDetails: beginBookingTimer()
         case .nothing, .failed: break
@@ -1772,13 +1799,15 @@ final class AppModel {
         case booked
         case nothing
         case failed
-        /// Projekt oder Aufgabe fehlen; die Zeit steht gestoppt, bis sie im Formular gebucht wird.
+        /// Projekt oder Aufgabe fehlen oder die Zeit lief keine Minute; sie steht gestoppt, bis sie im
+        /// Formular gebucht wird.
         case needsDetails
     }
 
     /// Bucht die Zeit auf den Tag, an dem sie begann, gerundet wie in den Einstellungen. Unter einer Minute
-    /// bucht die App nichts. Scheitert das Buchen, bleibt die Zeit gestoppt stehen, bis ein neuer Versuch klappt.
-    private func bookTimer(until stop: Date) async -> TimerBooking {
+    /// bucht die App nichts: Mit `keepsShort` (Stoppen) bleibt die Zeit für das Formular stehen, sonst (ein neuer
+    /// Start) wird sie verworfen. Scheitert das Buchen, bleibt die Zeit gestoppt stehen, bis ein neuer Versuch klappt.
+    private func bookTimer(until stop: Date, keepsShort: Bool = false) async -> TimerBooking {
         guard var timer = runningTimer, let service, !isStoppingTimer else { return .failed }
         timerNotice = nil
         if timer.end == nil {
@@ -1787,6 +1816,10 @@ final class AppModel {
         }
         let seconds = Self.seconds(of: timer, until: stop)
         guard seconds >= 60 else {
+            if keepsShort {
+                timerError = nil
+                return .needsDetails
+            }
             preferences.runningTimer = nil
             timerError = nil
             if timerEditing != nil { finishEditing() }
@@ -1858,10 +1891,11 @@ final class AppModel {
         }
     }
 
-    /// Gestoppte Zeit, der Projekt oder Aufgabe fehlen: ins Formular, mit der gemessenen Dauer.
+    /// Gestoppte Zeit, der Projekt oder Aufgabe fehlen oder die keine Minute lief: ins Formular, mit der
+    /// gemessenen Dauer, mindestens einer Minute.
     func beginBookingTimer() {
         guard let timer = runningTimer, timer.end != nil else { return }
-        let measured = Int((Double(Self.seconds(of: timer, until: clock())) / 60).rounded())
+        let measured = max(1, Int((Double(Self.seconds(of: timer, until: clock())) / 60).rounded()))
         openTimerInForm(.booking, timer: timer, durationText: DurationInput.format(measured))
     }
 
@@ -2025,21 +2059,95 @@ final class AppModel {
 
     // MARK: - Menüleiste
 
-    /// Nur das Symbol; läuft eine Projektzeit, daneben ihre Stunden und Minuten.
+    /// Die eingestellte Zeit, soweit ihre Funktion eingeschaltet ist: Ohne Zeiterfassung bleibt die
+    /// Anwesenheit, ohne Anwesenheit „Automatisch“.
+    var effectiveMenuBarTime: Preferences.MenuBarTime {
+        let time = preferences.menuBarTime
+        switch time {
+        case .automatic, .runningProject, .projectToday:
+            return timesheetsActive ? time : attendanceActive ? .attendanceToday : .symbolOnly
+        case .attendanceToday:
+            return attendanceActive ? time : timesheetsActive ? .automatic : .symbolOnly
+        case .symbolOnly:
+            return time
+        }
+    }
+
+    /// Heute auf Projekte gebucht; eine heute begonnene Projektzeit zählt mit, bis sie gebucht ist.
+    var todayProjectMinutes: Int {
+        guard let timer = runningTimer, CalendarDay(date: timer.start, calendar: calendar) == today else {
+            return todayBookedMinutes
+        }
+        return todayBookedMinutes + Self.seconds(of: timer, until: now) / 60
+    }
+
+    /// Symbol und die eingestellte Zeit: die Stoppuhr mit der laufenden Projektzeit, die Uhr mit der Projektzeit
+    /// von heute, die Person mit der Anwesenheit. Steht noch nichts zu Buche, nur die Uhr.
     var menuBarContent: MenuBarContent {
         guard screen == .main, session != nil else {
             return MenuBarContent(text: "", isSignedIn: false,
                                   accessibilityLabel: String(localized: "\(AppInfo.name), nicht angemeldet"))
         }
-        guard timesheetsActive, let timer = runningTimer else {
-            return MenuBarContent(text: "", isSignedIn: true, accessibilityLabel: AppInfo.name)
+        var content = MenuBarContent(text: "", isSignedIn: true, accessibilityLabel: AppInfo.name, toolTip: menuBarToolTip)
+        let time = effectiveMenuBarTime
+        let timer = timesheetsActive ? runningTimer : nil
+        if let timer, time == .automatic || time == .runningProject {
+            let minutes = Self.seconds(of: timer, until: now) / 60
+            let spoken = timer.end == nil
+                ? String(localized: "Projektzeit läuft seit \(DurationInput.spoken(minutes))")
+                : String(localized: "Projektzeit \(DurationInput.spoken(minutes)) noch nicht gebucht")
+            content.symbol = .stopwatch
+            content.text = DurationInput.format(minutes)
+            content.accessibilityLabel = "\(AppInfo.name), \(spoken)"
+        } else if time == .automatic || time == .projectToday, todayProjectMinutes > 0 {
+            let spoken = String(localized: "Projektzeit heute \(DurationInput.spoken(todayProjectMinutes))")
+            content.text = DurationInput.format(todayProjectMinutes)
+            content.accessibilityLabel = "\(AppInfo.name), \(spoken)"
+        } else if time == .attendanceToday, !todayPeriodsIncludingOpen.isEmpty {
+            let spoken = String(localized: "Anwesenheit heute \(DurationInput.spoken(todayAttendanceMinutes))")
+            content.symbol = .person
+            content.text = DurationInput.format(todayAttendanceMinutes)
+            content.accessibilityLabel = "\(AppInfo.name), \(spoken)"
         }
-        let minutes = Self.seconds(of: timer, until: now) / 60
-        let spoken = timer.end == nil
-            ? String(localized: "Projektzeit läuft seit \(DurationInput.spoken(minutes))")
-            : String(localized: "Projektzeit \(DurationInput.spoken(minutes)) noch nicht gebucht")
-        return MenuBarContent(text: preferences.showsRunningTime ? DurationInput.format(minutes) : "", isSignedIn: true,
-                              accessibilityLabel: "\(AppInfo.name), \(spoken)")
+        return content
+    }
+
+    /// Alle Zeiten von heute für den Tooltip am Symbol, je eine Zeile.
+    private var menuBarToolTip: String {
+        var lines: [String] = []
+        if timesheetsActive {
+            if let timer = runningTimer {
+                let duration = DurationInput.format(Self.seconds(of: timer, until: now) / 60)
+                lines.append(timer.end == nil
+                    ? String(localized: "Läuft \(duration) seit \(clockTime(timer.start)) · \(timerPathText)")
+                    : String(localized: "Gestoppt bei \(duration) · \(timerPathText)"))
+            }
+            lines.append(String(localized: "Projektzeit heute \(DurationInput.format(todayProjectMinutes)) Std."))
+        }
+        if attendanceActive {
+            let total = DurationInput.format(todayAttendanceMinutes)
+            if let openPeriod {
+                lines.append(String(localized: "Anwesend seit \(clockTime(openPeriod.checkIn)) · heute \(total) Std."))
+            } else if todayPeriodsIncludingOpen.isEmpty {
+                lines.append(String(localized: "Heute nicht eingestempelt"))
+            } else {
+                lines.append(String(localized: "Anwesend heute \(total) Std."))
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+
+    /// Beginn der Zeit, die in der Menüleiste mitzählt.
+    private var menuBarCountingStart: Date? {
+        switch effectiveMenuBarTime {
+        case .automatic, .runningProject, .projectToday:
+            guard timesheetsActive, let timer = runningTimer, timer.end == nil else { return nil }
+            return timer.start
+        case .attendanceToday:
+            return openPeriod?.checkIn
+        case .symbolOnly:
+            return nil
+        }
     }
 
     // MARK: - Konto

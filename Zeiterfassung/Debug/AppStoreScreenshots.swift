@@ -186,7 +186,8 @@ enum AppStoreScreenshots {
         try? bitmap.representation(using: .png, properties: [:])?.write(to: file)
     }
 
-    /// Schlichte Menüleiste: rechts das Symbol der App, mit laufender Projektzeit daneben, und die Uhrzeit.
+    /// Schlichte Menüleiste: rechts das Symbol der App, mit laufender Projektzeit die Stoppuhr und die Zeit daneben,
+    /// und die Uhrzeit.
     private static func drawMenuBar(dark: Bool, timer: String?) {
         let bar = NSRect(x: 0, y: canvas.height - menuBarHeight, width: canvas.width, height: menuBarHeight)
         (dark ? NSColor(white: 0.1, alpha: 0.55) : NSColor(white: 1, alpha: 0.55)).setFill()
@@ -200,7 +201,8 @@ enum AppStoreScreenshots {
         time.draw(at: NSPoint(x: canvas.width - 20 - time.size().width, y: bar.minY + 4))
 
         let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
-        if let symbol = NSImage(systemSymbolName: "clock", accessibilityDescription: nil)?.withSymbolConfiguration(configuration) {
+        if let symbol = NSImage(systemSymbolName: timer == nil ? "clock" : "stopwatch", accessibilityDescription: nil)?
+            .withSymbolConfiguration(configuration) {
             let tinted = NSImage(size: symbol.size, flipped: false) { rect in
                 symbol.draw(in: rect)
                 color.set()
