@@ -1699,15 +1699,6 @@ final class AppModel {
         return String(localized: "seit \(Formatting.shortDate(startDay)) \(clockTime(timer.start))")
     }
 
-    /// „Starten“ oben im Fenster, solange keine Zeit läuft.
-    var offersQuickStart: Bool { timesheetsActive && runningTimer == nil && !isStoppingTimer }
-
-    /// Startet die Zeit sofort, ohne Projekt, Aufgabe und Beschreibung.
-    func startTimerNow() async {
-        guard offersQuickStart else { return }
-        await beginTimer(project: nil, taskID: nil, taskName: nil, description: "")
-    }
-
     /// „Starten“ steht im Formular, solange es einen neuen Eintrag für heute anlegt.
     var offersTimerStart: Bool { timesheetsActive && editingEntry == nil && timerEditing == nil && isShowingToday }
 

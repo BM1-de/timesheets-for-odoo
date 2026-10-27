@@ -4258,22 +4258,6 @@
         }
       }
     },
-    "Startet die Zeit jetzt. Projekt und Aufgabe wählst du, während sie läuft, oder beim Stoppen." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Starts the timer now. Choose the project and task while it runs or when you stop it."
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Démarre le minuteur maintenant. Choisissez le projet et la tâche pendant qu’il tourne ou à l’arrêt."
-          }
-        }
-      }
-    },
     "Status" : {
       "localizations" : {
         "en" : {

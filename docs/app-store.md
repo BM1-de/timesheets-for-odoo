@@ -26,8 +26,8 @@ the review, please use the built-in demo, which needs no server:
 2. Enter Server: demo and API key: demo, click Connect, then Done.
 3. Try booking time (project, task, description, duration), or leave the duration empty and
    click Start; the running time appears at the top of the window and in the menu bar, and the
-   red button stops and books it. Start at the top of the window runs without a project; it is
-   chosen while the time runs or in the form that opens when stopping. Check in and out, browse days with the arrows, and open
+   red button stops and books it. Start also runs without a project; it is chosen while the
+   time runs or in the form that opens when stopping. Check in and out, browse days with the arrows, and open
    Settings with the gear icon.
 
 The demo uses invented data held in memory; it sends nothing over the network.
@@ -54,7 +54,7 @@ ZEITEINTRÄGE
 
 PROJEKT-TIMER
 • Ohne Dauer starten, stoppen bucht sofort
-• Oben starten, Projekt später wählen
+• Ohne Projekt starten, beim Stoppen zuordnen
 • Mit ▶ eine Arbeit des Tages erneut starten
 • Immer nur eine laufende Zeit; ein neuer Start bucht die alte
 • Läuft weiter, auch wenn die App beendet ist
@@ -98,7 +98,7 @@ TIME ENTRIES
 
 TIMER
 • Start without a duration, stopping books right away
-• Start at the top, choose the project later
+• Start without a project, assign it when stopping
 • Start a task of the day again with ▶
 • One timer at a time; starting another books the running one
 • Keeps running even when the app is closed
@@ -142,7 +142,7 @@ SAISIES DE TEMPS
 
 MINUTEUR
 • Démarrer sans durée, l’arrêt enregistre aussitôt
-• Démarrer en haut, choisir le projet plus tard
+• Démarrer sans projet, l’attribuer à l’arrêt
 • Relancer une tâche du jour avec ▶
 • Un seul minuteur à la fois ; en démarrer un autre enregistre le précédent
 • Continue de tourner même quand l’app est fermée

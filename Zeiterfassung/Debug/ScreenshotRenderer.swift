@@ -186,7 +186,7 @@ enum ScreenshotRenderer {
         model.preferences.runningTimer = nil
         model.dismissTimerNotice()
 
-        // Oben gestartet, ohne Projekt: Angaben ändern, beim Stoppen zuordnen
+        // Ohne Projekt gestartet: Angaben ändern, beim Stoppen zuordnen
         await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-starten.png"))
         model.preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: nil, projectName: nil, taskID: nil,
                                                                   taskName: nil, description: "",

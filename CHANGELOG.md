@@ -13,6 +13,8 @@
   duration, at least 0:01, like a timer without a project; book it there or discard it with the
   trash. Until then no new timer starts. Starting another timer still discards a running one
   that is under a minute.
+- Timer: “Start” at the top of the window is gone; with an empty form, “Start” in the form does
+  the same and also runs without a project.
 
 ## 0.3.0 – 2026-10-27
 

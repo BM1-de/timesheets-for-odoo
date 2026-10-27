@@ -20,14 +20,13 @@ Projektzeit von heute oder die Anwesenheit.
   französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf Wunsch auf 15, 30 oder 60
   Minuten gerundet. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
   sich durchblättern und nachtragen.
-- **Projekt-Timer:** „Starten“ oben im Fenster startet die Zeit sofort; Projekt, Aufgabe und
-  Beschreibung wählst du, während sie läuft (Klick auf die Projektzeile), oder beim Stoppen im
-  Formular, das dann mit der gemessenen Dauer bucht. Ohne Dauer startet „Starten“ im Formular die
-  Zeit für Projekt, Aufgabe und Beschreibung; ▶ an einem Eintrag startet dieselbe Arbeit erneut.
-  Es läuft immer nur eine Zeit, ein neuer Start bucht die laufende. Stoppen bucht sofort auf den
-  Tag, an dem die Zeit begann, gerundet wie eingestellt; lief sie keine Minute, kommt sie wie eine
-  Zeit ohne Projekt ins Formular, verloren geht nichts. Die Zeit läuft weiter, wenn die App
-  beendet wird.
+- **Projekt-Timer:** Ohne Dauer startet „Starten“ im Formular die Zeit für Projekt, Aufgabe und
+  Beschreibung, auch ganz ohne Angaben; was fehlt, wählst du, während sie läuft (Klick auf die
+  Projektzeile), oder beim Stoppen im Formular, das dann mit der gemessenen Dauer bucht. ▶ an einem
+  Eintrag startet dieselbe Arbeit erneut. Es läuft immer nur eine Zeit, ein neuer Start bucht die
+  laufende. Stoppen bucht sofort auf den Tag, an dem die Zeit begann, gerundet wie eingestellt; lief
+  sie keine Minute, kommt sie wie eine Zeit ohne Projekt ins Formular, verloren geht nichts. Die
+  Zeit läuft weiter, wenn die App beendet wird.
 - **Bearbeiten:** Ein Klick auf einen Eintrag öffnet ihn unten im Formular, auch um ihn auf einen
   anderen Tag zu legen; löschen geht nach einer Rückfrage. Abgerechnete Einträge sperrt Odoo bis
   auf die Beschreibung, die App zeigt das.

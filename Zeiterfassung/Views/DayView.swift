@@ -74,18 +74,6 @@ struct DayHeader: View {
                     .controlSize(.small)
                     .accessibilityLabel("Wird geladen")
             }
-            if model.offersQuickStart {
-                Button { Task { await model.startTimerNow() } } label: {
-                    HStack(spacing: 4) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 8))
-                            .foregroundStyle(.tint)
-                        Text("Starten")
-                    }
-                }
-                .controlSize(.small)
-                .help("Startet die Zeit jetzt. Projekt und Aufgabe wählst du, während sie läuft, oder beim Stoppen.")
-            }
             if !model.isShowingToday {
                 Button("Heute") { model.showToday() }
                     .controlSize(.small)

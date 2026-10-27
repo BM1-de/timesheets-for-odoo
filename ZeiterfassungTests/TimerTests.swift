@@ -230,17 +230,16 @@ struct TimerTests {
         let clock = MovingClock()
         let model = try await signedIn(odoo, clock: clock)
         model.preferences.durationRounding = .quarterHour
-        try await fillDraft(model)
-        #expect(model.offersQuickStart)
+        // Im leeren Formular startet „Starten“ ohne Projekt.
+        #expect(model.draft.projectID == nil && model.canStartTimer)
 
-        await model.startTimerNow()
+        await model.startTimer()
         let timer = try #require(model.runningTimer)
         #expect(timer.projectID == nil && timer.taskID == nil && timer.description.isEmpty)
         #expect(model.timerPathText == "Projekt fehlt")
-        #expect(!model.offersQuickStart)
-        // Solange sie ohne Projekt läuft, startet keine neue; das Formular bleibt, wie es war.
+        // Solange sie ohne Projekt läuft, startet keine neue, auch nicht mit einem Eintrag im Formular.
+        try await fillDraft(model)
         #expect(!model.canStartTimer)
-        #expect(model.draft.description == "Titelseite")
 
         clock.advance(by: 42 * 60)
         await model.stopTimer()
@@ -269,8 +268,8 @@ struct TimerTests {
         let odoo = FakeOdoo()
         let clock = MovingClock()
         let model = try await signedIn(odoo, clock: clock)
+        await model.startTimer()
         try await fillDraft(model)
-        await model.startTimerNow()
 
         model.beginEditingTimer()
         #expect(model.timerEditing == .running)
@@ -303,8 +302,8 @@ struct TimerTests {
         }
         let clock = MovingClock()
         let model = try await signedIn(odoo, clock: clock)
+        await model.startTimer()
         try await fillDraft(model)
-        await model.startTimerNow()
         let entry = try #require(model.entries.first)
         #expect(!model.canStartTimer(like: entry))
         clock.advance(by: 20 * 60)
