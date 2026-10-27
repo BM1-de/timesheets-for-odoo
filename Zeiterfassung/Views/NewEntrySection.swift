@@ -138,6 +138,18 @@ struct NewEntrySection: View {
                     if model.isSaving {
                         ProgressView().controlSize(.small)
                     }
+                    if model.offersTimerStart {
+                        Button { Task { await model.startTimer() } } label: {
+                            HStack(spacing: 5) {
+                                Image(systemName: "play.fill")
+                                    .font(.system(size: 9))
+                                    .foregroundStyle(model.canStartTimer ? AnyShapeStyle(.tint) : AnyShapeStyle(.tertiary))
+                                Text("Starten")
+                            }
+                        }
+                        .disabled(!model.canStartTimer)
+                        .help("Ohne Dauer läuft die Zeit ab jetzt, bis du sie stoppst.")
+                    }
                     Button(model.saveError == nil ? String(localized: "Eintragen") : String(localized: "Erneut versuchen")) { submit() }
                         .buttonStyle(.borderedProminent)
                         .keyboardShortcut(formShortcut(.defaultAction))
@@ -145,6 +157,12 @@ struct NewEntrySection: View {
                 }
                 .padding(.leading, 6)
                 .padding(.top, 2)
+                if model.runningTimer != nil, model.canStartTimer {
+                    Text("Starten bucht vorher die laufende Zeit.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                }
             }
         }
         .onChange(of: focusedField) { oldValue, _ in

@@ -4,7 +4,7 @@
 
 import SwiftUI
 
-/// Hauptansicht: Tag, Anwesenheit, Einträge, neuer Eintrag.
+/// Hauptansicht: Tag, laufende Projektzeit, Anwesenheit, Einträge, neuer Eintrag.
 struct DayView: View {
     @Environment(AppModel.self) private var model
     @Environment(Updates.self) private var updates: Updates?
@@ -26,6 +26,9 @@ struct DayView: View {
             VStack(spacing: 14) {
                 if model.noFeatureActive {
                     NoFeatureCard(onOpenSettings: onOpenSettings)
+                }
+                if model.timesheetsActive, model.runningTimer != nil || model.timerNotice != nil {
+                    RunningTimerSection()
                 }
                 if model.attendanceActive {
                     AttendanceSection()

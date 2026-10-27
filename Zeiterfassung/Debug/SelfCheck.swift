@@ -72,8 +72,7 @@ enum SelfCheck {
             model.draft.description = "Selbsttest der Mac-App"
             model.draft.durationText = "0:15"
             await model.save()
-            passed = report(model.saveError == nil && model.entries.count == before + 1,
-                            "Eintrag gebucht und in der Liste (\(model.menuBarContent.text) in der Menüleiste)") && passed
+            passed = report(model.saveError == nil && model.entries.count == before + 1, "Eintrag gebucht und in der Liste") && passed
         }
 
         // Stempeln: ein und wieder aus, oder Odoo lehnt ab und die App blendet den Knopf aus.

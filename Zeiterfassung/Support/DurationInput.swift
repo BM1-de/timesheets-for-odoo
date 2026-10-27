@@ -44,6 +44,11 @@ enum DurationInput {
         String(format: "%d:%02d", minutes / 60, minutes % 60)
     }
 
+    /// `1:05:09` für die laufende Projektzeit
+    static func format(seconds: Int) -> String {
+        String(format: "%d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+    }
+
     /// „1 Stunde 5 Minuten“ für VoiceOver; Einzahl und Mehrzahl stehen im Übersetzungskatalog.
     static func spoken(_ minutes: Int) -> String {
         let hours = minutes / 60

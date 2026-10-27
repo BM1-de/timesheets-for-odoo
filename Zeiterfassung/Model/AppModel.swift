@@ -49,7 +49,6 @@ final class AppModel {
 
     struct MenuBarContent: Equatable {
         var text: String
-        var showsDot: Bool
         var isSignedIn: Bool
         var accessibilityLabel: String
     }
@@ -121,6 +120,20 @@ final class AppModel {
     enum Deletion: Equatable {
         case entry(TimesheetEntry)
         case period(AttendancePeriod)
+        /// Laufende Projektzeit verwerfen, ohne sie zu buchen
+        case runningTimer
+    }
+
+    /// Ergebnis nach dem Stoppen oder Verwerfen der Projektzeit.
+    struct TimerNotice: Equatable {
+        enum Kind: Equatable {
+            case done
+            case info
+            case warning
+        }
+
+        let kind: Kind
+        let text: String
     }
 
     // MARK: - Abhängigkeiten
@@ -144,7 +157,7 @@ final class AppModel {
     @ObservationIgnored private var entryCache: [CalendarDay: [TimesheetEntry]] = [:]
     @ObservationIgnored private var periodCache: [CalendarDay: [AttendancePeriod]] = [:]
     @ObservationIgnored private var taskLoadDates: [Int: Date] = [:]
-    @ObservationIgnored private var uncertainSave: UncertainSave?
+    @ObservationIgnored private var uncertainSaves: [UncertainSave] = []
     /// Was im Formular für einen neuen Eintrag stand, bevor ein bestehender zum Bearbeiten geöffnet wurde.
     @ObservationIgnored private var draftBeforeEditing: Draft?
     @ObservationIgnored private let logger = Logger(subsystem: "de.bm1.ZeiterfassungFuerOdoo", category: "model")
@@ -193,6 +206,10 @@ final class AppModel {
     private(set) var isAttendanceListExpanded: Bool?
     private(set) var pendingDeletion: Deletion?
     private(set) var isDeleting = false
+    private(set) var isStoppingTimer = false
+    /// Warum die gestoppte Projektzeit nicht gebucht werden konnte.
+    private(set) var timerError: String?
+    private(set) var timerNotice: TimerNotice?
 
     init(preferences: Preferences, http: any HTTPClient, secrets: any SecretStore, calendar: Calendar = .gregorianLocal,
          clock: @escaping @Sendable () -> Date = { Date() }) {
@@ -259,6 +276,7 @@ final class AppModel {
         }
         preferences.session = newSession
         preferences.cachedCapabilities = found
+        if preferences.runningTimer?.account != newSession.keychainAccount { preferences.runningTimer = nil }
         // Die Datenbank nur merken, wenn sie eingegeben wurde. Sonst findet die App sie selbst wieder.
         preferences.loginHints = .init(server: isDemo ? "demo" : url.absoluteString, login: newSession.login,
                                        database: database.flatMap { $0.trimmed.isEmpty ? nil : $0.trimmed })
@@ -300,6 +318,7 @@ final class AppModel {
         preferences.cachedCapabilities = nil
         preferences.stampingRefused = false
         preferences.attendanceEmployeeID = nil
+        preferences.runningTimer = nil
         session = nil
         capabilities = nil
         service = nil
@@ -324,6 +343,7 @@ final class AppModel {
 
     func panelDidClose() {
         lastPanelClose = clock()
+        timerNotice = nil
     }
 
     /// Prüft, welche Funktionen Odoo bietet. Mit `recheck` (auf Wunsch in den Einstellungen) wird
@@ -544,7 +564,7 @@ final class AppModel {
         tasksByProject = [:]
         taskLoadDates = [:]
         taskLoadError = nil
-        uncertainSave = nil
+        uncertainSaves = []
         lastRefresh = nil
         lastRefreshAttempt = nil
         failedRefreshes = 0
@@ -560,6 +580,9 @@ final class AppModel {
         isSavingAttendance = false
         pendingDeletion = nil
         isDeleting = false
+        isStoppingTimer = false
+        timerError = nil
+        timerNotice = nil
         day = today
         editDay = today
     }
@@ -605,13 +628,21 @@ final class AppModel {
         tickTask?.cancel()
         tickTask = Task { [weak self] in
             while !Task.isCancelled {
-                try? await Task.sleep(for: .seconds(20))
+                try? await Task.sleep(for: self?.tickDelay ?? .seconds(20))
                 await self?.tick()
             }
         }
     }
 
-    /// Alle 20 Sekunden: Tageswechsel, regelmäßig neu laden, nach Fehlern erneut versuchen.
+    /// Alle 20 Sekunden; läuft eine Projektzeit, auch zu jeder ihrer vollen Minuten, damit die Menüleiste
+    /// mitzählt.
+    private var tickDelay: Duration {
+        guard let timer = runningTimer, timer.end == nil else { return .seconds(20) }
+        let intoMinute = clock().timeIntervalSince(timer.start).truncatingRemainder(dividingBy: 60)
+        return .seconds(min(20, 60 - intoMinute + 0.05))
+    }
+
+    /// Tageswechsel, regelmäßig neu laden, nach Fehlern erneut versuchen.
     func tick() async {
         let previousToday = today
         now = clock()
@@ -859,14 +890,8 @@ final class AppModel {
         isSaving = true
         saveError = nil
         do {
-            let earlier = try await countMatches(of: request, service: service)
-            var createdID: Int?
-            if !earlier.arrivedEarlier {
-                uncertainSave = UncertainSave(request: request, matchesBefore: earlier.count)
-                createdID = try await service.createTimesheet(request)
-            }
+            let createdID = try await create(request, service: service)
             guard token == sessionToken else { return }
-            uncertainSave = nil
             if let createdID { insertSaved(createdID, request) }
             // Was während des Speicherns schon für den nächsten Eintrag getippt wurde, bleibt stehen.
             if draft.description == submitted.description { draft.description = "" }
@@ -877,9 +902,25 @@ final class AppModel {
         } catch {
             guard token == sessionToken else { return }
             isSaving = false
-            if !Self.mayHaveArrived(error) { uncertainSave = nil }
             saveError = Self.message(for: error)
             if case .unauthorized? = error as? OdooError { handle(error) }
+        }
+    }
+
+    /// Legt einen Eintrag in Odoo an. Blieb beim letzten Versuch mit genau diesem Eintrag die Antwort aus
+    /// und kam er doch an, wird er nicht ein zweites Mal angelegt; das Ergebnis ist dann `nil`.
+    private func create(_ request: TimesheetDraft, service: OdooService) async throws -> Int? {
+        let earlier = try await countMatches(of: request, service: service)
+        uncertainSaves.removeAll { $0.request == request }
+        guard !earlier.arrivedEarlier else { return nil }
+        uncertainSaves.append(UncertainSave(request: request, matchesBefore: earlier.count))
+        do {
+            let id = try await service.createTimesheet(request)
+            uncertainSaves.removeAll { $0.request == request }
+            return id
+        } catch {
+            if !Self.mayHaveArrived(error) { uncertainSaves.removeAll { $0.request == request } }
+            throw error
         }
     }
 
@@ -888,7 +929,7 @@ final class AppModel {
     /// nicht ein zweites Mal angelegt.
     private func countMatches(of request: TimesheetDraft,
                               service: OdooService) async throws -> (count: Int, arrivedEarlier: Bool) {
-        if let pending = uncertainSave, pending.request == request {
+        if let pending = uncertainSaves.first(where: { $0.request == request }) {
             let current = Self.matches(of: request, in: try await service.timesheets(on: request.day))
             return (current, current > pending.matchesBefore)
         }
@@ -912,11 +953,12 @@ final class AppModel {
     }
 
     /// Zeigt einen gerade angelegten Eintrag sofort, bis das Neuladen die Liste aus Odoo bringt.
-    private func insertSaved(_ id: Int, _ request: TimesheetDraft) {
+    private func insertSaved(_ id: Int, _ request: TimesheetDraft, taskName: String? = nil) {
         guard id > 0, var list = entryCache[request.day] else { return }
         let project = projects.first { $0.id == request.projectID }
-        let task = request.taskID.flatMap { taskID in tasksByProject[request.projectID]?.first { $0.id == taskID } }
-            .map { Reference(id: $0.id, name: $0.name) }
+        let task = request.taskID.flatMap { taskID in
+            (tasksByProject[request.projectID]?.first { $0.id == taskID }?.name ?? taskName).map { Reference(id: taskID, name: $0) }
+        }
         list.append(TimesheetEntry(id: id, description: request.description,
                                    project: project.map { Reference(id: $0.id, name: $0.name) }, task: task,
                                    minutes: request.minutes, day: request.day,
@@ -1480,8 +1522,13 @@ final class AppModel {
     var deletionTitle: String {
         switch pendingDeletion {
         case .period?: return String(localized: "Zeitraum löschen?")
+        case .runningTimer?: return String(localized: "Laufende Zeit verwerfen?")
         default: return String(localized: "Eintrag löschen?")
         }
+    }
+
+    var deletionConfirmTitle: String {
+        pendingDeletion == .runningTimer ? String(localized: "Verwerfen") : String(localized: "Löschen")
     }
 
     var deletionMessage: String {
@@ -1494,13 +1541,24 @@ final class AppModel {
         case .period(let period)?:
             let range = "\(clockTime(period.checkIn)) – \(period.checkOut.map(clockTime) ?? String(localized: "jetzt"))"
             return String(localized: "\(range) wird in Odoo gelöscht.")
+        case .runningTimer?:
+            let duration = DurationInput.format(timerSeconds() / 60)
+            let description = runningTimer?.description.trimmed ?? ""
+            let title = description.isEmpty ? String(localized: "Ohne Beschreibung") : description
+            return String(localized: "\(duration) Std. für „\(title)“ werden nicht gebucht.")
         case nil:
             return ""
         }
     }
 
     func confirmDeletion() async {
-        guard let deletion = pendingDeletion, let service, !isDeleting else { return }
+        guard let deletion = pendingDeletion, !isDeleting else { return }
+        if deletion == .runningTimer {
+            pendingDeletion = nil
+            discardTimer()
+            return
+        }
+        guard let service else { return }
         let token = sessionToken
         isDeleting = true
         do {
@@ -1509,6 +1567,8 @@ final class AppModel {
                 try await service.deleteTimesheet(id: entry.id)
             case .period(let period):
                 try await service.deleteAttendance(id: period.id)
+            case .runningTimer:
+                break
             }
             guard token == sessionToken else { return }
             isDeleting = false
@@ -1520,6 +1580,8 @@ final class AppModel {
             case .period:
                 attendanceEditor = nil
                 attendanceNotice = AttendanceNotice(kind: .done, text: String(localized: "Zeitraum gelöscht."))
+            case .runningTimer:
+                break
             }
             await refresh(force: true)
         } catch {
@@ -1534,9 +1596,175 @@ final class AppModel {
                 if attendanceEditor != nil { attendanceEditor?.error = message } else {
                     attendanceNotice = AttendanceNotice(kind: .warning, text: message)
                 }
+            case .runningTimer:
+                break
             }
             if case .unauthorized? = error as? OdooError { handle(error) }
         }
+    }
+
+    // MARK: - Projekt-Timer
+
+    /// Laufende Projektzeit dieses Kontos; `nil`, wenn keine läuft.
+    var runningTimer: Preferences.RunningTimer? {
+        guard let timer = preferences.runningTimer, timer.account == session?.keychainAccount else { return nil }
+        return timer
+    }
+
+    /// Beschreibung der laufenden Zeit; lässt sich ändern, bis sie gebucht ist.
+    var timerDescription: String {
+        get { runningTimer?.description ?? "" }
+        set { if runningTimer != nil { preferences.runningTimer?.description = newValue } }
+    }
+
+    /// Sekunden seit dem Start; ist die Zeit gestoppt und noch nicht gebucht, bis zum Stopp.
+    func timerSeconds() -> Int {
+        guard let timer = runningTimer else { return 0 }
+        return Self.seconds(of: timer, until: clock())
+    }
+
+    private static func seconds(of timer: Preferences.RunningTimer, until now: Date) -> Int {
+        max(0, Int((timer.end ?? now).timeIntervalSince(timer.start)))
+    }
+
+    /// „seit 14:10“, an einem früheren Tag mit Datum.
+    var timerStartText: String {
+        guard let timer = runningTimer else { return "" }
+        let startDay = CalendarDay(date: timer.start, calendar: calendar)
+        if startDay == today { return String(localized: "seit \(clockTime(timer.start))") }
+        return String(localized: "seit \(Formatting.shortDate(startDay)) \(clockTime(timer.start))")
+    }
+
+    /// „Starten“ steht im Formular, solange es einen neuen Eintrag für heute anlegt.
+    var offersTimerStart: Bool { timesheetsActive && editingEntry == nil && isShowingToday }
+
+    /// Starten geht mit Projekt, wo nötig mit Aufgabe, und ohne Dauer.
+    var canStartTimer: Bool {
+        guard offersTimerStart, !isSaving, !isStoppingTimer, draft.projectID != nil else { return false }
+        return (!taskIsRequired || draft.taskID != nil) && durationResult == .empty
+    }
+
+    /// Startet die Zeit für Projekt, Aufgabe und Beschreibung im Formular.
+    func startTimer() async {
+        guard canStartTimer, let projectID = draft.projectID,
+              let project = projects.first(where: { $0.id == projectID }) else { return }
+        if let organization, organization.lacksEmployee(for: project) {
+            saveError = missingEmployeeMessage(for: project)
+            return
+        }
+        saveError = nil
+        let submitted = draft
+        let taskID = taskIsRequired ? draft.taskID : nil
+        guard await beginTimer(project: project, taskID: taskID, taskName: taskID == nil ? nil : selectedTaskName,
+                               description: draft.description.trimmed) else { return }
+        // Was während des Startens schon getippt wurde, bleibt stehen.
+        if draft.description == submitted.description { draft.description = "" }
+    }
+
+    /// Erneut starten geht, solange das Projekt des Eintrags Buchungen annimmt und nicht genau diese Zeit
+    /// schon läuft.
+    func canStartTimer(like entry: TimesheetEntry) -> Bool {
+        guard timesheetsActive, !isStoppingTimer, let projectID = entry.project?.id,
+              projects.contains(where: { $0.id == projectID }) else { return false }
+        guard let timer = runningTimer, timer.end == nil else { return true }
+        return !(timer.projectID == projectID && timer.taskID == entry.task?.id && timer.description == entry.description)
+    }
+
+    /// Startet die Zeit mit Projekt, Aufgabe und Beschreibung eines Eintrags.
+    func startTimer(like entry: TimesheetEntry) async {
+        guard canStartTimer(like: entry), let project = projects.first(where: { $0.id == entry.project?.id }) else { return }
+        if let organization, organization.lacksEmployee(for: project) {
+            timerNotice = TimerNotice(kind: .warning, text: missingEmployeeMessage(for: project))
+            return
+        }
+        await beginTimer(project: project, taskID: entry.task?.id, taskName: entry.task?.name, description: entry.description)
+    }
+
+    /// Ein Timer zur Zeit: Eine laufende Zeit wird bis zum neuen Start gebucht. Scheitert das, startet nichts.
+    @discardableResult
+    private func beginTimer(project: Project, taskID: Int?, taskName: String?, description: String) async -> Bool {
+        guard let account = session?.keychainAccount else { return false }
+        let start = clock()
+        timerNotice = nil
+        var booking = TimerBooking.nothing
+        if runningTimer != nil { booking = await bookTimer(until: start) }
+        guard booking != .failed else { return false }
+        preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: project.id, projectName: project.name,
+                                                            taskID: taskID, taskName: taskName, description: description,
+                                                            start: start)
+        recentProjectIDs = [project.id] + recentProjectIDs.filter { $0 != project.id }
+        if booking == .booked { await refresh(force: true) }
+        return true
+    }
+
+    /// Stoppt die Zeit und bucht sie.
+    func stopTimer() async {
+        if await bookTimer(until: clock()) == .booked { await refresh(force: true) }
+    }
+
+    private enum TimerBooking {
+        case booked
+        case nothing
+        case failed
+    }
+
+    /// Bucht die Zeit auf den Tag, an dem sie begann, gerundet wie in den Einstellungen. Unter einer Minute
+    /// bucht die App nichts. Scheitert das Buchen, bleibt die Zeit gestoppt stehen, bis ein neuer Versuch klappt.
+    private func bookTimer(until stop: Date) async -> TimerBooking {
+        guard var timer = runningTimer, let service, !isStoppingTimer else { return .failed }
+        timerNotice = nil
+        if timer.end == nil {
+            timer.end = stop
+            preferences.runningTimer = timer
+        }
+        let seconds = Self.seconds(of: timer, until: stop)
+        guard seconds >= 60 else {
+            preferences.runningTimer = nil
+            timerError = nil
+            timerNotice = TimerNotice(kind: .info, text: String(localized: "Weniger als eine Minute, nichts gebucht."))
+            return .nothing
+        }
+        let measured = Int((Double(seconds) / 60).rounded())
+        let minutes = preferences.durationRounding.minutes.map { DurationInput.rounded(measured, toNearest: $0) } ?? measured
+        let request = TimesheetDraft(projectID: timer.projectID, taskID: timer.taskID, description: timer.description.trimmed,
+                                     minutes: minutes, day: CalendarDay(date: timer.start, calendar: calendar))
+        let token = sessionToken
+        isStoppingTimer = true
+        timerError = nil
+        do {
+            let createdID = try await create(request, service: service)
+            guard token == sessionToken else { return .failed }
+            isStoppingTimer = false
+            preferences.runningTimer = nil
+            if let createdID { insertSaved(createdID, request, taskName: timer.taskName) }
+            let duration = DurationInput.format(minutes)
+            timerNotice = TimerNotice(kind: .done, text: minutes == measured
+                ? String(localized: "\(duration) Std. gebucht auf \(timer.path).")
+                : String(localized: "\(duration) Std. gebucht auf \(timer.path), aus \(DurationInput.format(measured)) gerundet."))
+            return .booked
+        } catch {
+            guard token == sessionToken else { return .failed }
+            isStoppingTimer = false
+            timerError = Self.message(for: error)
+            if case .unauthorized? = error as? OdooError { handle(error) }
+            return .failed
+        }
+    }
+
+    /// Papierkorb an der Zeit: unter einer Minute gleich weg, sonst nach einer Rückfrage.
+    func requestDiscardTimer() {
+        guard runningTimer != nil, !isStoppingTimer else { return }
+        if timerSeconds() < 60 { discardTimer() } else { pendingDeletion = .runningTimer }
+    }
+
+    private func discardTimer() {
+        preferences.runningTimer = nil
+        timerError = nil
+        timerNotice = TimerNotice(kind: .info, text: String(localized: "Laufende Zeit verworfen, nichts gebucht."))
+    }
+
+    func dismissTimerNotice() {
+        timerNotice = nil
     }
 
     // MARK: - Mehrere Firmen
@@ -1618,42 +1846,21 @@ final class AppModel {
 
     // MARK: - Menüleiste
 
-    var effectiveMenuBarDisplay: Preferences.MenuBarDisplay {
-        switch (timesheetsActive, attendanceActive) {
-        case (true, true): return preferences.menuBarDisplay
-        case (false, true): return .attendance
-        default: return .booked
-        }
-    }
-
+    /// Nur das Symbol; läuft eine Projektzeit, daneben ihre Stunden und Minuten.
     var menuBarContent: MenuBarContent {
         guard screen == .main, session != nil else {
-            return MenuBarContent(text: "", showsDot: false, isSignedIn: false,
+            return MenuBarContent(text: "", isSignedIn: false,
                                   accessibilityLabel: String(localized: "\(AppInfo.name), nicht angemeldet"))
         }
-        guard !noFeatureActive else {
-            return MenuBarContent(text: "–", showsDot: false, isSignedIn: true, accessibilityLabel: AppInfo.name)
+        guard timesheetsActive, let timer = runningTimer else {
+            return MenuBarContent(text: "", isSignedIn: true, accessibilityLabel: AppInfo.name)
         }
-        let booked = todayBookedMinutes
-        let present = todayAttendanceMinutes
-        var spoken: [String] = []
-        let text: String
-        switch effectiveMenuBarDisplay {
-        case .booked:
-            text = DurationInput.format(booked)
-            spoken.append(String(localized: "heute \(DurationInput.spoken(booked)) gebucht"))
-        case .attendance:
-            text = DurationInput.format(present)
-            spoken.append(String(localized: "heute \(DurationInput.spoken(present)) anwesend"))
-        case .both:
-            text = "\(DurationInput.format(booked)) · \(DurationInput.format(present))"
-            spoken.append(String(localized: "heute \(DurationInput.spoken(booked)) gebucht"))
-            spoken.append(String(localized: "\(DurationInput.spoken(present)) anwesend"))
-        }
-        let checkedIn = attendanceActive && openPeriod != nil
-        if checkedIn { spoken.append(String(localized: "eingestempelt")) }
-        return MenuBarContent(text: text, showsDot: checkedIn && preferences.showsCheckedInDot, isSignedIn: true,
-                              accessibilityLabel: "\(AppInfo.name), " + spoken.joined(separator: ", "))
+        let minutes = Self.seconds(of: timer, until: now) / 60
+        let spoken = timer.end == nil
+            ? String(localized: "Projektzeit läuft seit \(DurationInput.spoken(minutes))")
+            : String(localized: "Projektzeit \(DurationInput.spoken(minutes)) noch nicht gebucht")
+        return MenuBarContent(text: preferences.showsRunningTime ? DurationInput.format(minutes) : "", isSignedIn: true,
+                              accessibilityLabel: "\(AppInfo.name), \(spoken)")
     }
 
     // MARK: - Konto

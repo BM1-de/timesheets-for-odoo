@@ -166,6 +166,7 @@ struct IconTile: View {
 struct ErrorBanner: View {
     let title: LocalizedStringKey
     let message: String
+    var retry: (() -> Void)?
 
     var body: some View {
         HStack(alignment: .top, spacing: 9) {
@@ -173,18 +174,26 @@ struct ErrorBanner: View {
                 .foregroundStyle(.red)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 2) {
-                Text(title).fontWeight(.semibold)
-                Text(message)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title).fontWeight(.semibold)
+                    Text(message)
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .accessibilityElement(children: .combine)
+                if let retry {
+                    Button("Erneut versuchen", action: retry)
+                        .controlSize(.small)
+                        .padding(.top, 4)
+                }
             }
             Spacer(minLength: 0)
         }
         .padding(.vertical, 9)
         .padding(.horizontal, 12)
         .background(Color.red.opacity(0.09), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .contain)
     }
 }
 

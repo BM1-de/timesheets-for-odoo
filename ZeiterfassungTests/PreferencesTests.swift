@@ -41,4 +41,24 @@ struct PreferencesTests {
         Preferences(defaults: defaults).durationRounding = .hour
         #expect(Preferences(defaults: defaults).durationRounding == .hour)
     }
+
+    @Test("Menüleiste: laufende Projektzeit ab Werk an, die Anzeige bis Version 0.2 wird entfernt")
+    func menuBarDefaults() {
+        let defaults = ScratchDefaults.make("zeiterfassung-tests")
+        defaults.set("both", forKey: "menuBar.display")
+        defaults.set(false, forKey: "menuBar.checkedInDot")
+        #expect(Preferences(defaults: defaults).showsRunningTime)
+        #expect(defaults.object(forKey: "menuBar.display") == nil)
+        #expect(defaults.object(forKey: "menuBar.checkedInDot") == nil)
+    }
+
+    @Test("die laufende Projektzeit übersteht einen Neustart")
+    func storesRunningTimer() {
+        let defaults = ScratchDefaults.make("zeiterfassung-tests")
+        let timer = Preferences.RunningTimer(account: "https://odoo.example.de||7", projectID: 3, projectName: "Kundenmagazin",
+                                             taskID: 32, taskName: "Layout", description: "Titelseite", start: TestClock.now)
+        Preferences(defaults: defaults).runningTimer = timer
+        #expect(Preferences(defaults: defaults).runningTimer == timer)
+        #expect(timer.path == "Kundenmagazin › Layout")
+    }
 }

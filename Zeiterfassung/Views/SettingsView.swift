@@ -60,15 +60,16 @@ struct SettingsView: View {
                 .font(.callout)
             }
 
-            Section("Menüleiste") {
-                Picker("Anzeigen", selection: $preferences.menuBarDisplay) {
-                    Text("Gebuchte Stunden").tag(Preferences.MenuBarDisplay.booked)
-                    Text("Anwesenheit").tag(Preferences.MenuBarDisplay.attendance)
-                    Text("Beides").tag(Preferences.MenuBarDisplay.both)
-                }
-                .disabled(!(model.timesheetsActive && model.attendanceActive))
-                Toggle("Grünen Punkt zeigen, solange ich eingestempelt bin", isOn: $preferences.showsCheckedInDot)
-                    .disabled(!model.attendanceActive)
+            Section {
+                Toggle("Laufende Projektzeit anzeigen", isOn: $preferences.showsRunningTime)
+                    .disabled(!model.timesheetsActive)
+            } header: {
+                Text("Menüleiste")
+            } footer: {
+                Text("Läuft keine Projektzeit, zeigt die Menüleiste nur das Symbol.")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             Section("Konto") {
@@ -169,7 +170,11 @@ struct SettingsView: View {
         .confirmationDialog("Von Odoo abmelden?", isPresented: $confirmsSignOut) {
             Button("Abmelden", role: .destructive) { model.signOut() }
         } message: {
-            Text("Der API-Schlüssel wird aus dem Schlüsselbund gelöscht. Deine Einträge in Odoo bleiben erhalten.")
+            if model.runningTimer != nil {
+                Text("Der API-Schlüssel wird aus dem Schlüsselbund gelöscht. Deine Einträge in Odoo bleiben erhalten, die laufende Projektzeit wird nicht gebucht.")
+            } else {
+                Text("Der API-Schlüssel wird aus dem Schlüsselbund gelöscht. Deine Einträge in Odoo bleiben erhalten.")
+            }
         }
         .onAppear {
             loginItemEnabled = LoginItem.isEnabled

@@ -51,9 +51,21 @@ enum AppStoreScreenshots {
         model.stop()
         let texts = headlines[language] ?? headlines["en"]!
 
+        // Seit 14:10 läuft eine Projektzeit; die Menüleiste zeigt 0:42.
+        await model.loadTasks(projectID: 5)
+        let timer = model.session.map { session in
+            Preferences.RunningTimer(account: session.keychainAccount, projectID: 5,
+                                     projectName: model.projects.first { $0.id == 5 }?.name ?? "",
+                                     taskID: 52, taskName: model.tasksByProject[5]?.first { $0.id == 52 }?.name,
+                                     description: entryDescription[language] ?? entryDescription["en"]!,
+                                     start: ScreenshotRenderer.now.addingTimeInterval(-42 * 60))
+        }
+        model.preferences.runningTimer = timer
+
         let day = parts.appending(path: "tag.png")
         await ScreenshotRenderer.renderPanel(model, appearance: .aqua, to: day)
-        compose(texts[0], panel: day, to: directory.appending(path: "1-tag.png"))
+        compose(texts[0], panel: day, timer: "0:42", to: directory.appending(path: "1-tag.png"))
+        model.preferences.runningTimer = nil
 
         model.preferences.durationRounding = .quarterHour
         if let project = model.projects.first(where: { $0.id == 5 }) {
@@ -81,9 +93,10 @@ enum AppStoreScreenshots {
             appearance: .aqua, to: settings)
         compose(texts[2], window: settings, to: directory.appending(path: "3-einstellungen.png"))
 
+        model.preferences.runningTimer = timer
         let dark = parts.appending(path: "dunkel.png")
         await ScreenshotRenderer.renderPanel(model, appearance: .darkAqua, to: dark)
-        compose(texts[3], panel: dark, darkBackground: true, to: directory.appending(path: "4-dunkel.png"))
+        compose(texts[3], panel: dark, timer: "0:42", darkBackground: true, to: directory.appending(path: "4-dunkel.png"))
     }
 
     // MARK: - Texte
@@ -118,9 +131,10 @@ enum AppStoreScreenshots {
     // MARK: - Zusammensetzen
 
     /// Fenster unter der Menüleiste rechts, Überschrift links; optional daneben die Projektsuche.
-    private static func compose(_ text: (String, String), panel: URL, beside: URL? = nil,
+    /// - Parameter timer: laufende Projektzeit neben dem Symbol in der Menüleiste
+    private static func compose(_ text: (String, String), panel: URL, beside: URL? = nil, timer: String? = nil,
                                 darkBackground: Bool = false, to file: URL) {
-        draw(to: file, dark: darkBackground) {
+        draw(to: file, dark: darkBackground, timer: timer) {
             guard let image = NSImage(contentsOf: panel) else { return }
             let size = pointSize(image)
             let statusItemX = canvas.width - 250
@@ -151,7 +165,7 @@ enum AppStoreScreenshots {
         }
     }
 
-    private static func draw(to file: URL, dark: Bool, content: () -> Void) {
+    private static func draw(to file: URL, dark: Bool, timer: String? = nil, content: () -> Void) {
         guard let bitmap = NSBitmapImageRep(bitmapDataPlanes: nil, pixelsWide: Int(canvas.width * 2), pixelsHigh: Int(canvas.height * 2),
                                             bitsPerSample: 8, samplesPerPixel: 4, hasAlpha: true, isPlanar: false,
                                             colorSpaceName: .deviceRGB, bytesPerRow: 0, bitsPerPixel: 0),
@@ -165,15 +179,15 @@ enum AppStoreScreenshots {
             ? [NSColor(srgbRed: 0.10, green: 0.13, blue: 0.24, alpha: 1), NSColor(srgbRed: 0.22, green: 0.16, blue: 0.36, alpha: 1)]
             : [NSColor(srgbRed: 0.42, green: 0.62, blue: 0.93, alpha: 1), NSColor(srgbRed: 0.62, green: 0.50, blue: 0.90, alpha: 1)]
         NSGradient(colors: colors)?.draw(in: NSRect(origin: .zero, size: canvas), angle: -35)
-        drawMenuBar(dark: dark)
+        drawMenuBar(dark: dark, timer: timer)
         content()
 
         NSGraphicsContext.restoreGraphicsState()
         try? bitmap.representation(using: .png, properties: [:])?.write(to: file)
     }
 
-    /// Schlichte Menüleiste: rechts das Symbol der App mit den heute gebuchten Stunden und die Uhrzeit.
-    private static func drawMenuBar(dark: Bool) {
+    /// Schlichte Menüleiste: rechts das Symbol der App, mit laufender Projektzeit daneben, und die Uhrzeit.
+    private static func drawMenuBar(dark: Bool, timer: String?) {
         let bar = NSRect(x: 0, y: canvas.height - menuBarHeight, width: canvas.width, height: menuBarHeight)
         (dark ? NSColor(white: 0.1, alpha: 0.55) : NSColor(white: 1, alpha: 0.55)).setFill()
         bar.fill()
@@ -193,7 +207,7 @@ enum AppStoreScreenshots {
                 rect.fill(using: .sourceAtop)
                 return true
             }
-            let hours = NSAttributedString(string: " 2:15", attributes: [.font: font, .foregroundColor: color])
+            let hours = NSAttributedString(string: timer.map { " " + $0 } ?? "", attributes: [.font: font, .foregroundColor: color])
             let width = tinted.size.width + hours.size().width
             let x = canvas.width - 250 - width / 2
             tinted.draw(in: NSRect(x: x, y: bar.minY + (menuBarHeight - tinted.size.height) / 2, width: tinted.size.width,

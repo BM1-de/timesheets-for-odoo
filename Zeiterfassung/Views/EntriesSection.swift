@@ -52,7 +52,8 @@ struct EntriesSection: View {
                 }
                 ForEach(Array(group.entries.enumerated()), id: \.element.id) { index, entry in
                     if index > 0 { Divider().padding(.leading, 12) }
-                    EntryRow(entry: entry, isSelected: model.editingEntry?.id == entry.id) {
+                    EntryRow(entry: entry, isSelected: model.editingEntry?.id == entry.id,
+                             onStart: model.canStartTimer(like: entry) ? { Task { await model.startTimer(like: entry) } } : nil) {
                         model.beginEditing(entry)
                     } onDelete: {
                         model.askToDelete(.entry(entry))
@@ -103,7 +104,8 @@ private struct CompanyHeader: View {
         }
         .font(.subheadline.weight(.semibold))
         .foregroundStyle(.secondary)
-        .padding(.horizontal, 12)
+        .padding(.leading, 12)
+        .padding(.trailing, EntryRow.durationInset)
         .padding(.top, 6)
         .padding(.bottom, 4)
         .background(Color.groupFooterFill)
@@ -113,12 +115,19 @@ private struct CompanyHeader: View {
     }
 }
 
-/// Ein Eintrag; ein Klick öffnet ihn unten im Formular zum Bearbeiten.
+/// Ein Eintrag; ein Klick öffnet ihn unten im Formular zum Bearbeiten. Beim Überfahren startet ▶ seine
+/// Zeit erneut.
 struct EntryRow: View {
     let entry: TimesheetEntry
     var isSelected = false
+    /// ▶ und „Erneut starten“; `nil`, wenn sich die Zeit nicht erneut starten lässt.
+    var onStart: (() -> Void)?
     var onEdit: () -> Void = {}
     var onDelete: () -> Void = {}
+    @State private var isHovering = false
+
+    /// Abstand der Dauer vom rechten Rand, mit Platz für ▶. Zwischensummen rücken genauso weit ein.
+    static let durationInset: CGFloat = 38
 
     private var title: String { entry.description.isEmpty ? String(localized: "Ohne Beschreibung") : entry.description }
 
@@ -131,44 +140,68 @@ struct EntryRow: View {
     }
 
     var body: some View {
-        Button(action: onEdit) {
-            HStack(spacing: 10) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(title)
-                        .foregroundStyle(entry.description.isEmpty ? .secondary : .primary)
-                        .lineLimit(1)
-                        .truncationMode(.tail)
-                    Text(entry.path)
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(1)
-                        .truncationMode(.middle)
+        HStack(spacing: 0) {
+            Button(action: onEdit) {
+                HStack(spacing: 10) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(title)
+                            .foregroundStyle(entry.description.isEmpty ? .secondary : .primary)
+                            .lineLimit(1)
+                            .truncationMode(.tail)
+                        Text(entry.path)
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                            .truncationMode(.middle)
+                    }
+                    Spacer(minLength: 8)
+                    if let lockLabel {
+                        Image(systemName: "lock")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                            .help(lockLabel)
+                    }
+                    Text(DurationInput.format(entry.minutes))
+                        .monospacedDigit()
                 }
-                Spacer(minLength: 8)
-                if let lockLabel {
-                    Image(systemName: "lock")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                        .help(lockLabel)
-                }
-                Text(DurationInput.format(entry.minutes))
-                    .monospacedDigit()
+                .padding(.leading, 12)
+                .padding(.trailing, 4)
+                .padding(.vertical, 7)
+                .frame(minHeight: 46)
+                .contentShape(Rectangle())
             }
-            .padding(.horizontal, 12)
-            .padding(.vertical, 7)
-            .frame(minHeight: 46)
-            .contentShape(Rectangle())
+            .buttonStyle(.plain)
+            .help([entry.description, entry.path].filter { !$0.isEmpty }.joined(separator: "\n"))
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel([title, entry.path, DurationInput.spoken(entry.minutes), lockLabel].compactMap { $0 }.joined(separator: ", "))
+            .accessibilityHint("Zum Bearbeiten öffnen")
+            .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+            .accessibilityActions {
+                if let onStart { Button("Erneut starten", action: onStart) }
+            }
+            ZStack {
+                if let onStart {
+                    Button(action: onStart) {
+                        Image(systemName: "play.fill")
+                            .font(.system(size: 10))
+                            .foregroundStyle(.tint)
+                    }
+                    .buttonStyle(IconButtonStyle())
+                    .opacity(isHovering ? 1 : 0)
+                    .help("Erneut starten")
+                    .accessibilityHidden(true)
+                }
+            }
+            .frame(width: Self.durationInset - 10)
+            .padding(.trailing, 6)
         }
-        .buttonStyle(.plain)
-        .background(isSelected ? Color.accentColor.opacity(0.12) : .clear)
-        .modifier(HoverHighlight())
-        .help([entry.description, entry.path].filter { !$0.isEmpty }.joined(separator: "\n"))
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel([title, entry.path, DurationInput.spoken(entry.minutes), lockLabel].compactMap { $0 }.joined(separator: ", "))
-        .accessibilityHint("Zum Bearbeiten öffnen")
-        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
+        .background(isSelected ? Color.accentColor.opacity(0.12) : isHovering ? Color.primary.opacity(0.04) : .clear)
+        .onHover { isHovering = $0 }
         .contextMenu {
             Button("Ändern", action: onEdit)
+            if let onStart {
+                Button("Erneut starten", action: onStart)
+            }
             Button("Beschreibung kopieren") {
                 NSPasteboard.general.clearContents()
                 NSPasteboard.general.setString(entry.description, forType: .string)

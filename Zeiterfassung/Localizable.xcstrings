@@ -33,18 +33,50 @@
         }
       }
     },
-    "%@ anwesend" : {
+    "%@ Std. für „%@“ werden nicht gebucht." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "present for %@"
+            "value" : "%@ h for “%@” won’t be booked."
           }
         },
         "fr" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "présence : %@"
+            "value" : "Les %@ h pour « %@ » ne seront pas enregistrées."
+          }
+        }
+      }
+    },
+    "%@ Std. gebucht auf %@, aus %@ gerundet." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ h booked to %@, rounded from %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ h enregistrées sur %@, arrondies à partir de %@."
+          }
+        }
+      }
+    },
+    "%@ Std. gebucht auf %@." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ h booked to %@."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%@ h enregistrées sur %@."
           }
         }
       }
@@ -780,22 +812,6 @@
         }
       }
     },
-    "Anzeigen" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher"
-          }
-        }
-      }
-    },
     "Auf diesem Server liegen mehrere Datenbanken. Bitte den Namen der Datenbank angeben." : {
       "localizations" : {
         "en" : {
@@ -988,22 +1004,6 @@
         }
       }
     },
-    "Beides" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Both"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Les deux"
-          }
-        }
-      }
-    },
     "Beim Anmelden am Mac öffnen" : {
       "localizations" : {
         "en" : {
@@ -1080,6 +1080,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Description"
+          }
+        }
+      }
+    },
+    "Beschreibung der laufenden Zeit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description of the running timer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Description du minuteur en cours"
           }
         }
       }
@@ -1452,6 +1468,22 @@
         }
       }
     },
+    "Der API-Schlüssel wird aus dem Schlüsselbund gelöscht. Deine Einträge in Odoo bleiben erhalten, die laufende Projektzeit wird nicht gebucht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The API key will be deleted from the keychain. Your entries in Odoo are kept; the running timer won’t be booked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "La clé API sera supprimée du trousseau. Vos saisies dans Odoo sont conservées, le minuteur en cours ne sera pas enregistré."
+          }
+        }
+      }
+    },
     "Der API-Schlüssel wird aus dem Schlüsselbund gelöscht. Deine Einträge in Odoo bleiben erhalten." : {
       "localizations" : {
         "en" : {
@@ -1704,6 +1736,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Cette heure est dans le futur."
+          }
+        }
+      }
+    },
+    "Die Zeit steht still, bis sie gebucht ist." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The timer stays stopped until the time is booked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Le minuteur reste arrêté jusqu’à l’enregistrement du temps."
           }
         }
       }
@@ -2012,6 +2060,22 @@
         }
       }
     },
+    "Erneut starten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start Again"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Relancer"
+          }
+        }
+      }
+    },
     "Erneut versuchen" : {
       "localizations" : {
         "en" : {
@@ -2188,22 +2252,6 @@
         }
       }
     },
-    "Gebuchte Stunden" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Booked hours"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Heures saisies"
-          }
-        }
-      }
-    },
     "Gefunden. Stempeln und Korrigieren braucht in Odoo das Recht „Sachbearbeiter: Alle Anwesenheiten verwalten“, bis dahin nur Anzeige." : {
       "localizations" : {
         "en" : {
@@ -2286,22 +2334,6 @@
     },
     "GitHub" : {
       "shouldTranslate" : false
-    },
-    "Grünen Punkt zeigen, solange ich eingestempelt bin" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Show a green dot while I’m checked in"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Afficher un point vert pendant le pointage"
-          }
-        }
-      }
     },
     "Heute" : {
       "localizations" : {
@@ -2751,6 +2783,70 @@
         }
       }
     },
+    "Laufende Projektzeit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running timer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minuteur en cours"
+          }
+        }
+      }
+    },
+    "Laufende Projektzeit anzeigen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Show running timer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Afficher le minuteur en cours"
+          }
+        }
+      }
+    },
+    "Laufende Zeit verwerfen?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard the running timer?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abandonner le minuteur en cours ?"
+          }
+        }
+      }
+    },
+    "Laufende Zeit verworfen, nichts gebucht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Timer discarded, nothing booked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minuteur abandonné, rien n’a été enregistré."
+          }
+        }
+      }
+    },
     "Layout" : {
       "localizations" : {
         "en" : {
@@ -2779,6 +2875,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Identifiant Odoo, souvent l’e-mail"
+          }
+        }
+      }
+    },
+    "Läuft keine Projektzeit, zeigt die Menüleiste nur das Symbol." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "When no timer is running, the menu bar shows only the icon."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans minuteur en cours, la barre des menus n’affiche que l’icône."
           }
         }
       }
@@ -3266,6 +3378,22 @@
         }
       }
     },
+    "Ohne Dauer läuft die Zeit ab jetzt, bis du sie stoppst." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Without a duration, the time runs from now until you stop it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sans durée, le temps court à partir de maintenant jusqu’à ce que vous l’arrêtiez."
+          }
+        }
+      }
+    },
     "Ohne Firma" : {
       "localizations" : {
         "en" : {
@@ -3490,6 +3618,54 @@
         }
       }
     },
+    "Projektzeit %@ noch nicht gebucht" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "timer at %@, not booked yet"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "minuteur à %@, pas encore enregistré"
+          }
+        }
+      }
+    },
+    "Projektzeit konnte nicht gebucht werden" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Couldn’t book the time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Impossible d’enregistrer le temps"
+          }
+        }
+      }
+    },
+    "Projektzeit läuft seit %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "timer running for %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "minuteur en cours depuis %@"
+          }
+        }
+      }
+    },
     "Prüfe …" : {
       "localizations" : {
         "en" : {
@@ -3698,6 +3874,38 @@
         }
       }
     },
+    "Starten" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Start"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrer"
+          }
+        }
+      }
+    },
+    "Starten bucht vorher die laufende Zeit." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starting books the running timer first."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarrer enregistre d’abord le minuteur en cours."
+          }
+        }
+      }
+    },
     "Status" : {
       "localizations" : {
         "en" : {
@@ -3758,6 +3966,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Pour pointer ici, il faut le droit Odoo « Responsable : gérer toutes les présences » ou être son propre approbateur présences. En attendant, pointez dans Odoo ; les corrections sont saisies par la personne responsable des présences."
+          }
+        }
+      }
+    },
+    "Stoppen und buchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Stop and Book"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Arrêter et enregistrer"
           }
         }
       }
@@ -4034,6 +4258,38 @@
         }
       }
     },
+    "Verwerfen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abandonner"
+          }
+        }
+      }
+    },
+    "Verwerfen …" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Discard…"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Abandonner…"
+          }
+        }
+      }
+    },
     "Von Odoo abmelden?" : {
       "localizations" : {
         "en" : {
@@ -4146,6 +4402,22 @@
         }
       }
     },
+    "Was machst du gerade?" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "What are you working on?"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Sur quoi travaillez-vous ?"
+          }
+        }
+      }
+    },
     "Website-Betreuung (Muster GmbH)" : {
       "localizations" : {
         "en" : {
@@ -4222,6 +4494,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Autres projets"
+          }
+        }
+      }
+    },
+    "Weniger als eine Minute, nichts gebucht." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Less than a minute, nothing booked."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Moins d’une minute, rien n’a été enregistré."
           }
         }
       }
@@ -4642,22 +4930,6 @@
         }
       }
     },
-    "eingestempelt" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "checked in"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "pointage en cours"
-          }
-        }
-      }
-    },
     "freigegeben" : {
       "localizations" : {
         "en" : {
@@ -4686,38 +4958,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "pour le %@"
-          }
-        }
-      }
-    },
-    "heute %@ anwesend" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "present for %@ today"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "présence aujourd’hui : %@"
-          }
-        }
-      }
-    },
-    "heute %@ gebucht" : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "%@ booked today"
-          }
-        },
-        "fr" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "temps saisi aujourd’hui : %@"
           }
         }
       }
@@ -4766,6 +5006,38 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "jamais"
+          }
+        }
+      }
+    },
+    "seit %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "since %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis %@"
+          }
+        }
+      }
+    },
+    "seit %@ %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "since %@, %@"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "depuis le %@ à %@"
           }
         }
       }

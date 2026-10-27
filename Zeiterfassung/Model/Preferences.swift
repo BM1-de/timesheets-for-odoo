@@ -9,12 +9,6 @@ import Observation
 @MainActor
 @Observable
 final class Preferences {
-    enum MenuBarDisplay: String, CaseIterable, Sendable {
-        case booked
-        case attendance
-        case both
-    }
-
     /// Rundung der Dauer beim Buchen. Der Wert ist die Einheit in Minuten, 0 heißt nicht runden.
     enum DurationRounding: Int, CaseIterable, Sendable {
         case off = 0
@@ -53,6 +47,24 @@ final class Preferences {
         }
     }
 
+    /// Laufende Projektzeit. Sie steht hier, damit sie einen Neustart der App übersteht.
+    struct RunningTimer: Codable, Equatable, Sendable {
+        /// Konto, zu dem die Zeit gehört (`OdooSession.keychainAccount`).
+        var account: String
+        var projectID: Int
+        var projectName: String
+        var taskID: Int?
+        var taskName: String?
+        var description: String
+        var start: Date
+        /// Gestoppt, aber noch nicht gebucht, etwa ohne Verbindung zu Odoo. Die Zeit steht dann still,
+        /// bis das Buchen klappt oder die Zeit verworfen wird.
+        var end: Date?
+
+        /// „Projekt › Aufgabe“
+        var path: String { [projectName, taskName].compactMap { $0 }.joined(separator: " › ") }
+    }
+
     /// Angaben der letzten Anmeldung zum Vorausfüllen.
     struct LoginHints: Codable, Equatable, Sendable {
         var server: String
@@ -64,8 +76,9 @@ final class Preferences {
 
     var timesheetsEnabled: Bool { didSet { defaults.set(timesheetsEnabled, forKey: Key.timesheets) } }
     var attendanceEnabled: Bool { didSet { defaults.set(attendanceEnabled, forKey: Key.attendance) } }
-    var menuBarDisplay: MenuBarDisplay { didSet { defaults.set(menuBarDisplay.rawValue, forKey: Key.menuBarDisplay) } }
-    var showsCheckedInDot: Bool { didSet { defaults.set(showsCheckedInDot, forKey: Key.checkedInDot) } }
+    /// Laufende Projektzeit neben dem Symbol in der Menüleiste.
+    var showsRunningTime: Bool { didSet { defaults.set(showsRunningTime, forKey: Key.runningTime) } }
+    var runningTimer: RunningTimer? { didSet { store(runningTimer, forKey: Key.runningTimer) } }
     var durationRounding: DurationRounding { didSet { defaults.set(durationRounding.rawValue, forKey: Key.durationRounding) } }
     var session: OdooSession? { didSet { store(session, forKey: Key.session) } }
     var cachedCapabilities: Capabilities? { didSet { store(cachedCapabilities, forKey: Key.capabilities) } }
@@ -82,8 +95,8 @@ final class Preferences {
         self.defaults = defaults
         timesheetsEnabled = defaults.object(forKey: Key.timesheets) as? Bool ?? true
         attendanceEnabled = defaults.object(forKey: Key.attendance) as? Bool ?? true
-        menuBarDisplay = defaults.string(forKey: Key.menuBarDisplay).flatMap(MenuBarDisplay.init(rawValue:)) ?? .booked
-        showsCheckedInDot = defaults.object(forKey: Key.checkedInDot) as? Bool ?? true
+        showsRunningTime = defaults.object(forKey: Key.runningTime) as? Bool ?? true
+        runningTimer = Self.load(RunningTimer.self, from: defaults, forKey: Key.runningTimer)
         durationRounding = Self.durationRounding(in: defaults)
         session = Self.load(OdooSession.self, from: defaults, forKey: Key.session)
         cachedCapabilities = Self.load(Capabilities.self, from: defaults, forKey: Key.capabilities)
@@ -91,13 +104,14 @@ final class Preferences {
         stampingRefused = defaults.bool(forKey: Key.stampingRefused)
         loginItemDefaultApplied = defaults.bool(forKey: Key.loginItemDefault)
         attendanceEmployeeID = defaults.object(forKey: Key.attendanceEmployee) as? Int
+        for key in Key.retired { defaults.removeObject(forKey: key) }
     }
 
     private enum Key {
         static let timesheets = "feature.timesheets"
         static let attendance = "feature.attendance"
-        static let menuBarDisplay = "menuBar.display"
-        static let checkedInDot = "menuBar.checkedInDot"
+        static let runningTime = "menuBar.runningTime"
+        static let runningTimer = "timer.running"
         static let durationRounding = "duration.rounding"
         /// Bis Version 0.2, nur noch zum Übernehmen.
         static let quarterHour = "duration.roundToQuarterHour"
@@ -107,6 +121,8 @@ final class Preferences {
         static let stampingRefused = "odoo.stampingRefused"
         static let loginItemDefault = "loginItem.defaultApplied"
         static let attendanceEmployee = "attendance.employee"
+        /// Bis Version 0.2: gebuchte Stunden oder Anwesenheit in der Menüleiste, grüner Punkt beim Einstempeln.
+        static let retired = ["menuBar.display", "menuBar.checkedInDot"]
     }
 
     /// Bis Version 0.2 gab es nur den Schalter „Dauer auf Viertelstunden runden“, ab Werk an. Wer sich

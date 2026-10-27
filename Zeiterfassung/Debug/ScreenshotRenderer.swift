@@ -66,6 +66,7 @@ enum ScreenshotRenderer {
         await render(picker, appearance: .aqua, to: directory.appending(path: "projektsuche.png"))
 
         await renderEditing(model, to: directory)
+        await renderTimer(model, demo: demo, to: directory)
 
         // Nur Anwesenheit
         model.setTimesheetsEnabled(false)
@@ -141,6 +142,46 @@ enum ScreenshotRenderer {
             model.cancelAttendanceEditing()
         }
         model.setAttendanceListExpanded(false)
+    }
+
+    /// Projekt-Timer: läuft seit 14:10, wechseln, verwerfen, gebucht, ohne Netz nicht gebucht.
+    private static func renderTimer(_ model: AppModel, demo: FakeOdoo, to directory: URL) async {
+        guard let account = model.session?.keychainAccount else { return }
+        let timer = Preferences.RunningTimer(account: account, projectID: 5, projectName: "Website-Relaunch (Musterhaus GmbH)",
+                                             taskID: 52, taskName: "Design",
+                                             description: "Startseite: Varianten für den Kopfbereich",
+                                             start: now.addingTimeInterval(-42 * 60))
+        model.preferences.runningTimer = timer
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-laeuft.png"))
+        await renderPanel(model, appearance: .darkAqua, to: directory.appending(path: "timer-laeuft-dunkel.png"))
+
+        if let project = model.projects.first(where: { $0.id == 3 }) {
+            model.selectProject(project)
+            await model.loadTasks(projectID: 3)
+            model.draft.taskID = 32
+            model.draft.description = "Titelseite"
+            await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-wechseln.png"))
+            model.draft = AppModel.Draft()
+        }
+
+        model.requestDiscardTimer()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-verwerfen.png"))
+        model.cancelDeletion()
+
+        let rounding = model.preferences.durationRounding
+        model.preferences.durationRounding = .quarterHour
+        await model.stopTimer()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-gebucht.png"))
+        model.preferences.durationRounding = rounding
+
+        model.preferences.runningTimer = timer
+        demo.withLock { demo.offline = true }
+        await model.stopTimer()
+        demo.withLock { demo.offline = false }
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-nicht-gebucht.png"))
+        model.preferences.runningTimer = nil
+        model.dismissTimerNotice()
+        await model.refresh(force: true)
     }
 
     /// Modul Arbeitszeitgesetz: Am Donnerstag hat Odoo eine Pause eingefügt.

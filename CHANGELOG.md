@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- Timer: without a duration, “Start” in the form starts the time for project, task and
+  description; ▶ on an entry (or “Start Again” in its context menu) starts the same work again.
+  One timer at a time: starting another books the running one. Stop books right away on the
+  day the timer started, rounded as set; under a minute nothing is booked. The description can
+  be changed while it runs, the trash discards it after a confirmation, and it keeps running when
+  the app quits. If booking fails, the time stays stopped until a retry succeeds.
+- The menu bar shows only the clock icon, and the running timer's hours and minutes next to it.
+  Attendance and the green dot are no longer shown there; checking in and out stays in the
+  window. Settings › Menu bar has one switch, “Show running timer”.
 - Rounding is now a choice in the settings: don't round, 15 minutes, 30 minutes or 1 hour, to
   the nearest unit and never to zero. New installations don't round; the former switch “Round
   durations to quarter hours” becomes 15 minutes, so existing users keep what they had. The − and

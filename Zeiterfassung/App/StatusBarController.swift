@@ -8,8 +8,8 @@ import SwiftUI
 
 /// Symbol in der Menüleiste und das Fenster direkt darunter.
 ///
-/// Statt `MenuBarExtra` steuert die App das Symbol selbst: Nur so kann der grüne Punkt
-/// farbig bleiben, während Uhr und Zeit sich wie jedes Menüleistensymbol an hell und dunkel anpassen.
+/// Statt `MenuBarExtra` steuert die App Symbol und Fenster selbst: Nur so öffnet ein Linksklick das
+/// Fenster und ein Rechtsklick die üblichen Befehle.
 @MainActor
 final class StatusBarController: NSObject {
     private let model: AppModel
@@ -51,7 +51,7 @@ final class StatusBarController: NSObject {
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
         let content = model.menuBarContent
-        button.image = MenuBarIcon.image(showsDot: content.showsDot, isSignedIn: content.isSignedIn)
+        button.image = MenuBarIcon.image(isSignedIn: content.isSignedIn)
         button.title = content.text.isEmpty ? "" : " " + content.text
         button.setAccessibilityLabel(content.accessibilityLabel)
         button.toolTip = content.isSignedIn ? nil : String(localized: "\(AppInfo.name): bitte anmelden")
@@ -292,35 +292,15 @@ enum PanelMetrics {
     static let gapBelowMenuBar: CGFloat = 5
 }
 
-/// Uhr als Vorlagenbild; mit grünem Punkt davor, solange eingestempelt.
+/// Uhr als Vorlagenbild, das sich wie jedes Menüleistensymbol an hell und dunkel anpasst.
 enum MenuBarIcon {
     @MainActor
-    static func image(showsDot: Bool, isSignedIn: Bool) -> NSImage? {
+    static func image(isSignedIn: Bool) -> NSImage? {
         let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         let symbolName = isSignedIn ? "clock" : "clock.badge.questionmark"
-        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: AppInfo.name)?
-            .withSymbolConfiguration(configuration) else { return nil }
-        guard showsDot else {
-            symbol.isTemplate = true
-            return symbol
-        }
-
-        let dot: CGFloat = 6
-        let gap: CGFloat = 4
-        let size = NSSize(width: dot + gap + symbol.size.width, height: max(symbol.size.height, dot))
-        // Der Inhalt wird beim Zeichnen erzeugt; `labelColor` folgt so dem Erscheinungsbild der Menüleiste.
-        let image = NSImage(size: size, flipped: false) { rect in
-            NSColor.systemGreen.setFill()
-            NSBezierPath(ovalIn: NSRect(x: 0, y: (rect.height - dot) / 2, width: dot, height: dot)).fill()
-            let symbolRect = NSRect(x: dot + gap, y: (rect.height - symbol.size.height) / 2,
-                                    width: symbol.size.width, height: symbol.size.height)
-            symbol.draw(in: symbolRect)
-            NSColor.labelColor.setFill()
-            symbolRect.fill(using: .sourceAtop)
-            return true
-        }
-        image.isTemplate = false
-        image.accessibilityDescription = AppInfo.name
-        return image
+        let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: AppInfo.name)?
+            .withSymbolConfiguration(configuration)
+        symbol?.isTemplate = true
+        return symbol
     }
 }

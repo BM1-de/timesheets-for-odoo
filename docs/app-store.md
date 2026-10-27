@@ -24,8 +24,10 @@ the review, please use the built-in demo, which needs no server:
 
 1. Click the clock icon in the menu bar (the app has no Dock icon).
 2. Enter Server: demo and API key: demo, click Connect, then Done.
-3. Try booking time (project, task, description, duration), check in and out, browse days with
-   the arrows, and open Settings with the gear icon.
+3. Try booking time (project, task, description, duration), or leave the duration empty and
+   click Start; the running time appears at the top of the window and in the menu bar, and the
+   red button stops and books it. Check in and out, browse days with the arrows, and open
+   Settings with the gear icon.
 
 The demo uses invented data held in memory; it sends nothing over the network.
 
@@ -33,13 +35,13 @@ The demo uses invented data held in memory; it sends nothing over the network.
 
 - **Name:** Zeiterfassung für Odoo
 - **Untertitel:** Stunden buchen und stempeln
-- **Werbetext:** Stunden auf Projekte und Aufgaben buchen, ein- und ausstempeln und die Summe des
-  Tages immer im Blick, direkt aus der Menüleiste deines Mac.
+- **Werbetext:** Stunden auf Projekte und Aufgaben buchen oder mit Start und Stopp messen, ein- und
+  ausstempeln, direkt aus der Menüleiste deines Mac.
 - **Stichwörter:** Odoo,Zeiterfassung,Stundenzettel,Timesheet,Anwesenheit,Stempeluhr,Arbeitszeit,Projekte
 
 **Beschreibung**
 
-Zeiterfassung für Odoo bringt deine Zeiterfassung in die Menüleiste: Uhrsymbol anklicken, Projekt und Aufgabe wählen, Dauer eintragen, fertig. Der Eintrag landet sofort in deinem Odoo.
+Zeiterfassung für Odoo bringt deine Zeiterfassung in die Menüleiste: Uhrsymbol anklicken, Projekt und Aufgabe wählen, Dauer eintragen oder die Zeit starten, fertig. Der Eintrag landet sofort in deinem Odoo.
 
 ZEITEINTRÄGE
 • Projekte mit Suche, die zuletzt verwendeten stehen oben
@@ -49,6 +51,12 @@ ZEITEINTRÄGE
 • Einträge per Klick ändern oder löschen
 • Mehrere Firmen: Projekte nach Firma, Zwischensumme je Firma
 
+PROJEKT-TIMER
+• Ohne Dauer starten, stoppen bucht sofort
+• Mit ▶ eine Arbeit des Tages erneut starten
+• Immer nur eine laufende Zeit; ein neuer Start bucht die alte
+• Läuft weiter, auch wenn die App beendet ist
+
 ANWESENHEIT
 • Ein- und ausstempeln mit einem Klick
 • Zeiten und Pausen des Tages
@@ -56,8 +64,8 @@ ANWESENHEIT
 • Wie viel davon noch nicht auf Projekte gebucht ist
 
 MENÜLEISTE
-• Gebuchte Stunden, Anwesenheit oder beides
-• Grüner Punkt, solange du eingestempelt bist
+• Nur das Uhrsymbol, solange keine Projektzeit läuft
+• Sonst daneben Stunden und Minuten der laufenden Zeit
 
 Für Odoo 17, 18 und 19, Community und Enterprise, selbst betrieben, auf Odoo.sh oder Odoo Online. Nötig sind die Odoo-Apps Zeiterfassung und/oder Anwesenheiten und ein API-Schlüssel deines Odoo-Benutzers. Die App spricht nur mit deinem Odoo; der Schlüssel liegt im Schlüsselbund deines Mac.
 
@@ -69,13 +77,13 @@ Freie Software (AGPL-3.0), der Quellcode liegt auf GitHub. Odoo ist eine Marke d
 
 - **Name:** Timesheets for Odoo
 - **Subtitle:** Log hours and check in
-- **Promotional text:** Book hours to projects and tasks, check in and out, and keep today's total
-  in view, right from your Mac's menu bar.
+- **Promotional text:** Book hours to projects and tasks or time them with start and stop, check in
+  and out, right from your Mac's menu bar.
 - **Keywords:** Odoo,timesheet,time tracking,attendance,time clock,hours,projects,menu bar
 
 **Description**
 
-Timesheets for Odoo puts your time tracking in the menu bar: click the clock icon, pick project and task, enter the duration, done. The entry goes straight to your Odoo.
+Timesheets for Odoo puts your time tracking in the menu bar: click the clock icon, pick project and task, enter the duration or start the timer, done. The entry goes straight to your Odoo.
 
 TIME ENTRIES
 • Projects with search, recently used ones on top
@@ -85,6 +93,12 @@ TIME ENTRIES
 • Edit or delete entries with a click
 • Several companies: projects by company, subtotal per company
 
+TIMER
+• Start without a duration, stopping books right away
+• Start a task of the day again with ▶
+• One timer at a time; starting another books the running one
+• Keeps running even when the app is closed
+
 ATTENDANCE
 • Check in and out with one click
 • Today's periods and breaks
@@ -92,8 +106,8 @@ ATTENDANCE
 • How much of it is not yet booked to projects
 
 MENU BAR
-• Booked hours, attendance or both
-• Green dot while you are checked in
+• Just the clock icon while no timer is running
+• Otherwise the hours and minutes of the running timer
 
 For Odoo 17, 18 and 19, Community and Enterprise, self-hosted, on Odoo.sh or Odoo Online. Requires the Odoo apps Timesheets and/or Attendances and an API key of your Odoo user. The app only talks to your Odoo; the key is stored in your Mac's keychain.
 
@@ -105,13 +119,13 @@ Free software (AGPL-3.0), source code on GitHub. Odoo is a trademark of Odoo S.A
 
 - **Nom :** Feuilles de temps pour Odoo
 - **Sous-titre :** Saisir ses heures et pointer
-- **Texte promotionnel :** Saisissez vos heures sur projets et tâches, pointez l’arrivée et le
-  départ et gardez le total du jour en vue, depuis la barre des menus de votre Mac.
+- **Texte promotionnel :** Saisissez vos heures sur projets et tâches ou mesurez-les avec le
+  minuteur, pointez l’arrivée et le départ, depuis la barre des menus de votre Mac.
 - **Mots-clés :** Odoo,feuille de temps,suivi du temps,présence,pointeuse,heures,projets
 
 **Description**
 
-Feuilles de temps pour Odoo place votre suivi du temps dans la barre des menus : cliquez sur l’horloge, choisissez le projet et la tâche, indiquez la durée, c’est fait. La saisie arrive directement dans votre Odoo.
+Feuilles de temps pour Odoo place votre suivi du temps dans la barre des menus : cliquez sur l’horloge, choisissez le projet et la tâche, indiquez la durée ou démarrez le minuteur, c’est fait. La saisie arrive directement dans votre Odoo.
 
 SAISIES DE TEMPS
 • Projets avec recherche, les plus récents en tête
@@ -121,6 +135,12 @@ SAISIES DE TEMPS
 • Modifier ou supprimer une saisie d’un clic
 • Plusieurs sociétés : projets par société, sous-total par société
 
+MINUTEUR
+• Démarrer sans durée, l’arrêt enregistre aussitôt
+• Relancer une tâche du jour avec ▶
+• Un seul minuteur à la fois ; en démarrer un autre enregistre le précédent
+• Continue de tourner même quand l’app est fermée
+
 PRÉSENCE
 • Pointer l’arrivée et le départ d’un clic
 • Périodes et pauses du jour
@@ -128,8 +148,8 @@ PRÉSENCE
 • Ce qui n’est pas encore saisi sur des projets
 
 BARRE DES MENUS
-• Heures saisies, présence ou les deux
-• Point vert pendant le pointage
+• Seulement l’horloge tant qu’aucun minuteur ne tourne
+• Sinon les heures et minutes du minuteur en cours
 
 Pour Odoo 17, 18 et 19, Community et Enterprise, auto-hébergé, sur Odoo.sh ou Odoo Online. Nécessite les applications Odoo Feuilles de temps et/ou Présences et une clé API de votre utilisateur Odoo. L’app ne communique qu’avec votre Odoo ; la clé est enregistrée dans le trousseau de votre Mac.
 

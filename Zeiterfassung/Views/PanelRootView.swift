@@ -49,7 +49,7 @@ struct PanelRootView: View {
     }
 }
 
-/// Rückfrage vor dem Löschen, im Fenster selbst wie eine Mitteilung. ↩ bricht ab, wie bei Rückfragen,
+/// Rückfrage vor dem Löschen oder Verwerfen, im Fenster selbst wie eine Mitteilung. ↩ bricht ab, wie bei Rückfragen,
 /// die etwas Unwiderrufliches tun.
 struct DeletionConfirmation: View {
     @Environment(AppModel.self) private var model
@@ -76,7 +76,7 @@ struct DeletionConfirmation: View {
                     }
                     .keyboardShortcut(.defaultAction)
                     Button(role: .destructive) { Task { await model.confirmDeletion() } } label: {
-                        Text("Löschen").frame(maxWidth: .infinity)
+                        Text(model.deletionConfirmTitle).frame(maxWidth: .infinity)
                     }
                     .foregroundStyle(.red)
                 }
