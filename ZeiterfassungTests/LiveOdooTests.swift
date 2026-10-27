@@ -161,7 +161,13 @@ struct LiveOdooTests {
         let calendar = Calendar.gregorianLocal
         let day = CalendarDay.today().adding(days: -Int.random(in: 4000...9000))
         let start = try #require(calendar.date(bySettingHour: 8, minute: 0, second: 0, of: day.startDate()))
-        try await service.addAttendance(employeeID: employeeID, from: start, to: start.addingTimeInterval(4 * 3600))
+        do {
+            try await service.addAttendance(employeeID: employeeID, from: start, to: start.addingTimeInterval(4 * 3600))
+        } catch OdooError.accessDenied {
+            // Wie beim Stempeln: Ohne eigenen Anwesenheitsgenehmiger lehnt Odoo erst beim Anlegen ab. Die App
+            // blendet Nachtragen und Ändern dann aus.
+            return
+        }
         let added = try #require(try await service.attendances(on: day, employeeID: employeeID).first)
         #expect(added.checkIn == start)
 
