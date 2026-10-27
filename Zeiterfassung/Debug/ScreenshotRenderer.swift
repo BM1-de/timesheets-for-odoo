@@ -181,6 +181,22 @@ enum ScreenshotRenderer {
         await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-nicht-gebucht.png"))
         model.preferences.runningTimer = nil
         model.dismissTimerNotice()
+
+        // Oben gestartet, ohne Projekt: Angaben ändern, beim Stoppen zuordnen
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-starten.png"))
+        model.preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: nil, projectName: nil, taskID: nil,
+                                                                  taskName: nil, description: "",
+                                                                  start: now.addingTimeInterval(-42 * 60))
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-ohne-projekt.png"))
+        model.beginEditingTimer()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-aendern.png"))
+        model.cancelEditing()
+        await model.stopTimer()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-zuordnen.png"))
+        model.cancelEditing()
+        await renderPanel(model, appearance: .aqua, to: directory.appending(path: "timer-projekt-fehlt.png"))
+        model.preferences.runningTimer = nil
+        model.dismissTimerNotice()
         await model.refresh(force: true)
     }
 

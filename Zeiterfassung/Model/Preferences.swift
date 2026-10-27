@@ -51,8 +51,9 @@ final class Preferences {
     struct RunningTimer: Codable, Equatable, Sendable {
         /// Konto, zu dem die Zeit gehört (`OdooSession.keychainAccount`).
         var account: String
-        var projectID: Int
-        var projectName: String
+        /// `nil`: ohne Projekt gestartet; Projekt und Aufgabe kommen beim Stoppen dazu.
+        var projectID: Int?
+        var projectName: String?
         var taskID: Int?
         var taskName: String?
         var description: String

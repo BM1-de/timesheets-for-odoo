@@ -20,10 +20,10 @@ struct NewEntrySection: View {
 
     var body: some View {
         @Bindable var model = model
-        let isEditing = model.editingEntry != nil
+        let isEditing = model.editingEntry != nil || model.timerEditing != nil
         let fixed = model.editingIsLimited || model.editingIsLocked
         VStack(alignment: .leading, spacing: 6) {
-            SectionHeader(title: isEditing ? "Eintrag bearbeiten" : "Neuer Eintrag")
+            SectionHeader(title: sectionTitle)
             InsetGroup {
                 FormRow(symbol: "folder") {
                     Button { showsProjectPicker = true } label: {
@@ -63,36 +63,39 @@ struct NewEntrySection: View {
                 }
                 Divider().padding(.leading, 40)
                 FormRow(symbol: "text.alignleft") {
-                    TextField("Was hast du gemacht?", text: $model.draft.description)
+                    TextField(model.timerEditing == .running ? "Was machst du gerade?" : "Was hast du gemacht?",
+                              text: $model.draft.description)
                         .textFieldStyle(.plain)
                         .accessibilityLabel("Beschreibung")
                         .focused($focusedField, equals: .description)
                         .disabled(model.editingIsLocked)
                 }
-                Divider().padding(.leading, 40)
-                FormRow(symbol: "timer", minHeight: 44) {
-                    TextField(Self.durationPlaceholder, text: $model.draft.durationText)
-                        .textFieldStyle(.roundedBorder)
-                        .multilineTextAlignment(.trailing)
-                        .monospacedDigit()
-                        .frame(width: 64)
-                        .focused($focusedField, equals: .duration)
-                        .accessibilityLabel("Dauer in Stunden und Minuten")
-                    Text("Std.")
-                        .font(.callout)
-                        .foregroundStyle(.secondary)
-                    Spacer(minLength: 8)
-                    ControlGroup {
-                        Button { model.adjustDuration(by: -1) } label: { Image(systemName: "minus") }
-                            .accessibilityLabel(model.preferences.durationRounding.lessLabel)
-                        Button { model.adjustDuration(by: 1) } label: { Image(systemName: "plus") }
-                            .accessibilityLabel(model.preferences.durationRounding.moreLabel)
+                if model.timerEditing != .running {
+                    Divider().padding(.leading, 40)
+                    FormRow(symbol: "timer", minHeight: 44) {
+                        TextField(Self.durationPlaceholder, text: $model.draft.durationText)
+                            .textFieldStyle(.roundedBorder)
+                            .multilineTextAlignment(.trailing)
+                            .monospacedDigit()
+                            .frame(width: 64)
+                            .focused($focusedField, equals: .duration)
+                            .accessibilityLabel("Dauer in Stunden und Minuten")
+                        Text("Std.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                        Spacer(minLength: 8)
+                        ControlGroup {
+                            Button { model.adjustDuration(by: -1) } label: { Image(systemName: "minus") }
+                                .accessibilityLabel(model.preferences.durationRounding.lessLabel)
+                            Button { model.adjustDuration(by: 1) } label: { Image(systemName: "plus") }
+                                .accessibilityLabel(model.preferences.durationRounding.moreLabel)
+                        }
+                        .frame(width: 72)
+                        .help(model.preferences.durationRounding.stepHelp)
                     }
-                    .frame(width: 72)
-                    .help(model.preferences.durationRounding.stepHelp)
+                    .disabled(fixed)
                 }
-                .disabled(fixed)
-                if isEditing {
+                if model.editingEntry != nil {
                     Divider().padding(.leading, 40)
                     FormRow(symbol: "calendar") {
                         Picker("Datum", selection: $model.editDay) {
@@ -123,8 +126,7 @@ struct NewEntrySection: View {
             }
 
             if let saveError = model.saveError {
-                ErrorBanner(title: isEditing ? "Änderung konnte nicht gesichert werden" : "Eintrag konnte nicht gesichert werden",
-                            message: saveError)
+                ErrorBanner(title: saveErrorTitle, message: saveError)
             }
 
             if isEditing {
@@ -157,7 +159,12 @@ struct NewEntrySection: View {
                 }
                 .padding(.leading, 6)
                 .padding(.top, 2)
-                if model.runningTimer != nil, model.canStartTimer {
+                if model.offersTimerStart, model.runningTimerLacksProject {
+                    Text("Die laufende Zeit braucht erst ein Projekt, dann startet eine neue.")
+                        .font(.callout)
+                        .foregroundStyle(.secondary)
+                        .padding(.horizontal, 6)
+                } else if model.runningTimer != nil, model.canStartTimer {
                     Text("Starten bucht vorher die laufende Zeit.")
                         .font(.callout)
                         .foregroundStyle(.secondary)
@@ -170,6 +177,31 @@ struct NewEntrySection: View {
         }
     }
 
+    private var sectionTitle: LocalizedStringKey {
+        switch model.timerEditing {
+        case .running?: "Laufende Zeit"
+        case .booking?: "Zeit buchen"
+        case nil: model.editingEntry == nil ? "Neuer Eintrag" : "Eintrag bearbeiten"
+        }
+    }
+
+    private var saveErrorTitle: LocalizedStringKey {
+        switch model.timerEditing {
+        case .booking?: "Projektzeit konnte nicht gebucht werden"
+        case .running?: "Änderung konnte nicht gesichert werden"
+        case nil: model.editingEntry == nil ? "Eintrag konnte nicht gesichert werden" : "Änderung konnte nicht gesichert werden"
+        }
+    }
+
+    private var confirmTitle: String {
+        if model.saveError != nil { return String(localized: "Erneut versuchen") }
+        switch model.timerEditing {
+        case .running?: return String(localized: "Sichern")
+        case .booking?: return String(localized: "Buchen")
+        case nil: return String(localized: "Sichern")
+        }
+    }
+
     private var editingButtons: some View {
         HStack(spacing: 8) {
             if model.editingEntry?.lock == nil, let entry = model.editingEntry {
@@ -177,17 +209,23 @@ struct NewEntrySection: View {
                     .buttonStyle(.borderless)
                     .foregroundStyle(.red)
             }
+            if model.timerEditing == .booking {
+                Text("für \(model.timerDayShortDate)")
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
             Spacer()
             if model.isSaving {
                 ProgressView().controlSize(.small)
             }
             Button("Abbrechen") { model.cancelEditing() }
                 .keyboardShortcut(formShortcut(.cancelAction))
-            Button(model.saveError == nil ? String(localized: "Sichern") : String(localized: "Erneut versuchen")) { submit() }
+            Button(confirmTitle) { submit() }
                 .buttonStyle(.borderedProminent)
                 .keyboardShortcut(formShortcut(.defaultAction))
                 .disabled(!model.canSave)
         }
+        .padding(.leading, model.timerEditing == .booking ? 6 : 0)
         .padding(.top, 2)
     }
 
@@ -198,9 +236,9 @@ struct NewEntrySection: View {
 
     private func submit() {
         Task {
-            let wasEditing = model.editingEntry != nil
+            let wasNewEntry = model.editingEntry == nil && model.timerEditing == nil
             await model.save()
-            if model.saveError == nil, !wasEditing { focusedField = .description }
+            if model.saveError == nil, wasNewEntry { focusedField = .description }
         }
     }
 }

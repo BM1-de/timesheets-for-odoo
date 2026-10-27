@@ -12,10 +12,14 @@ struct RunningTimerSection: View {
         VStack(spacing: 8) {
             if let timer = model.runningTimer {
                 RunningTimerCard(timer: timer)
-                if timer.end != nil {
-                    ErrorBanner(title: "Projektzeit konnte nicht gebucht werden",
-                                message: model.timerError ?? String(localized: "Die Zeit steht still, bis sie gebucht ist."),
-                                retry: model.isStoppingTimer ? nil : { Task { await model.stopTimer() } })
+                if timer.end != nil, model.timerEditing == nil {
+                    if timer.projectID == nil, model.timerError == nil {
+                        MissingProjectNote { model.beginBookingTimer() }
+                    } else {
+                        ErrorBanner(title: "Projektzeit konnte nicht gebucht werden",
+                                    message: model.timerError ?? String(localized: "Die Zeit steht still, bis sie gebucht ist."),
+                                    retry: model.isStoppingTimer ? nil : { Task { await model.stopTimer() } })
+                    }
                 }
             }
             if let notice = model.timerNotice {
@@ -52,12 +56,21 @@ private struct RunningTimerCard: View {
                     .fontWeight(.semibold)
                     .lineLimit(1)
                     .truncationMode(.tail)
+                    .disabled(model.timerEditing != nil)
                     .accessibilityLabel("Beschreibung der laufenden Zeit")
-                Text(timer.path)
-                    .font(.callout)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-                    .truncationMode(.tail)
+                Button { model.beginEditingTimer() } label: {
+                    Text(model.timerPathText)
+                        .font(.callout)
+                        .foregroundStyle(timer.projectID == nil ? AnyShapeStyle(.tint) : AnyShapeStyle(.secondary))
+                        .lineLimit(1)
+                        .truncationMode(.tail)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .disabled(model.timerEditing != nil || model.isStoppingTimer)
+                .help("Projekt, Aufgabe und Beschreibung ändern")
+                .accessibilityLabel(model.timerPathText)
+                .accessibilityHint("Projekt, Aufgabe und Beschreibung ändern")
             }
             Spacer(minLength: 4)
             TimelineView(.periodic(from: timer.start, by: 1)) { _ in
@@ -111,6 +124,30 @@ private struct RunningTimerCard: View {
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Laufende Projektzeit")
+    }
+}
+
+/// Gestoppt ohne Projekt: Gebucht wird erst, wenn es gewählt ist.
+private struct MissingProjectNote: View {
+    let choose: () -> Void
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            Image(systemName: "exclamationmark.circle.fill")
+                .foregroundStyle(.orange)
+                .accessibilityHidden(true)
+            Text("Zum Buchen fehlt noch das Projekt.")
+                .font(.callout)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 4)
+            Button("Projekt wählen", action: choose)
+                .controlSize(.small)
+        }
+        .padding(.vertical, 7)
+        .padding(.leading, 12)
+        .padding(.trailing, 8)
+        .background(Color.orange.opacity(0.09), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .accessibilityElement(children: .contain)
     }
 }
 

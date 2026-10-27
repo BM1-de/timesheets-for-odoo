@@ -136,6 +136,14 @@ final class AppModel {
         let text: String
     }
 
+    /// Wofür das Formular gerade die Projektzeit zeigt.
+    enum TimerEditing: Equatable {
+        /// Projekt, Aufgabe und Beschreibung der laufenden Zeit ändern
+        case running
+        /// Gestoppt, aber Projekt oder Aufgabe fehlen: mit Dauer buchen
+        case booking
+    }
+
     // MARK: - Abhängigkeiten
 
     let preferences: Preferences
@@ -210,6 +218,8 @@ final class AppModel {
     /// Warum die gestoppte Projektzeit nicht gebucht werden konnte.
     private(set) var timerError: String?
     private(set) var timerNotice: TimerNotice?
+    /// Die Projektzeit steht im Formular; `nil` für einen neuen oder bearbeiteten Eintrag.
+    private(set) var timerEditing: TimerEditing?
 
     init(preferences: Preferences, http: any HTTPClient, secrets: any SecretStore, calendar: Calendar = .gregorianLocal,
          clock: @escaping @Sendable () -> Date = { Date() }) {
@@ -571,8 +581,9 @@ final class AppModel {
         lastProjectLoad = nil
         saveError = nil
         stampError = nil
-        if editingEntry != nil { draft = draftBeforeEditing ?? Draft() }
+        if editingEntry != nil || timerEditing != nil { draft = draftBeforeEditing ?? Draft() }
         editingEntry = nil
+        timerEditing = nil
         draftBeforeEditing = nil
         attendanceEditor = nil
         attendanceNotice = nil
@@ -865,6 +876,12 @@ final class AppModel {
 
     var canSave: Bool {
         guard timesheetsActive, !isSaving else { return false }
+        let taskComplete = !taskIsRequired || draft.taskID != nil
+        switch timerEditing {
+        case .running?: return runningTimer != nil && (draft.projectID == nil || taskComplete)
+        case .booking?: return runningTimer != nil && !isStoppingTimer && draft.projectID != nil && taskComplete && draftMinutes != nil
+        case nil: break
+        }
         switch editingEntry?.lock {
         case .validated?: return false
         case .invoiced?: return true
@@ -874,6 +891,16 @@ final class AppModel {
     }
 
     func save() async {
+        switch timerEditing {
+        case .running?:
+            applyTimerEditing()
+            return
+        case .booking?:
+            await bookTimerFromForm()
+            return
+        case nil:
+            break
+        }
         if editingEntry != nil {
             await saveEditing()
             return
@@ -973,8 +1000,9 @@ final class AppModel {
     /// Öffnet einen Eintrag im Formular. Was dort für einen neuen Eintrag stand, kommt danach zurück.
     func beginEditing(_ entry: TimesheetEntry) {
         guard timesheetsActive, !isSaving, editingEntry?.id != entry.id else { return }
-        if editingEntry == nil { draftBeforeEditing = draft }
+        if editingEntry == nil, timerEditing == nil { draftBeforeEditing = draft }
         editingEntry = entry
+        timerEditing = nil
         editDay = entry.day ?? day
         draft = Draft(projectID: entry.project?.id, taskID: entry.task?.id, description: entry.description,
                       durationText: DurationInput.format(entry.minutes))
@@ -984,12 +1012,13 @@ final class AppModel {
     }
 
     func cancelEditing() {
-        guard editingEntry != nil else { return }
+        guard editingEntry != nil || timerEditing != nil else { return }
         finishEditing()
     }
 
     private func finishEditing() {
         editingEntry = nil
+        timerEditing = nil
         draft = draftBeforeEditing ?? Draft()
         draftBeforeEditing = nil
         editDay = day
@@ -1611,6 +1640,15 @@ final class AppModel {
         return timer
     }
 
+    /// Die Zeit läuft ohne Projekt; es kommt spätestens beim Stoppen dazu.
+    var runningTimerLacksProject: Bool { runningTimer.map { $0.projectID == nil } ?? false }
+
+    /// „Projekt › Aufgabe“ der laufenden Zeit, ohne Projekt „Projekt fehlt“.
+    var timerPathText: String {
+        guard let timer = runningTimer else { return "" }
+        return timer.projectID == nil ? String(localized: "Projekt fehlt") : timer.path
+    }
+
     /// Beschreibung der laufenden Zeit; lässt sich ändern, bis sie gebucht ist.
     var timerDescription: String {
         get { runningTimer?.description ?? "" }
@@ -1635,26 +1673,41 @@ final class AppModel {
         return String(localized: "seit \(Formatting.shortDate(startDay)) \(clockTime(timer.start))")
     }
 
-    /// „Starten“ steht im Formular, solange es einen neuen Eintrag für heute anlegt.
-    var offersTimerStart: Bool { timesheetsActive && editingEntry == nil && isShowingToday }
+    /// „Starten“ oben im Fenster, solange keine Zeit läuft.
+    var offersQuickStart: Bool { timesheetsActive && runningTimer == nil && !isStoppingTimer }
 
-    /// Starten geht mit Projekt, wo nötig mit Aufgabe, und ohne Dauer.
-    var canStartTimer: Bool {
-        guard offersTimerStart, !isSaving, !isStoppingTimer, draft.projectID != nil else { return false }
-        return (!taskIsRequired || draft.taskID != nil) && durationResult == .empty
+    /// Startet die Zeit sofort, ohne Projekt, Aufgabe und Beschreibung.
+    func startTimerNow() async {
+        guard offersQuickStart else { return }
+        await beginTimer(project: nil, taskID: nil, taskName: nil, description: "")
     }
 
-    /// Startet die Zeit für Projekt, Aufgabe und Beschreibung im Formular.
+    /// „Starten“ steht im Formular, solange es einen neuen Eintrag für heute anlegt.
+    var offersTimerStart: Bool { timesheetsActive && editingEntry == nil && timerEditing == nil && isShowingToday }
+
+    /// Starten geht ohne Dauer, mit Projekt (wo nötig mit Aufgabe) oder ohne. Läuft schon eine Zeit ohne
+    /// Projekt, startet keine neue: Die laufende ließe sich nicht buchen.
+    var canStartTimer: Bool {
+        guard offersTimerStart, !isSaving, !isStoppingTimer, !runningTimerLacksProject,
+              durationResult == .empty else { return false }
+        return draft.projectID == nil || !taskIsRequired || draft.taskID != nil
+    }
+
+    /// Startet die Zeit für Projekt, Aufgabe und Beschreibung im Formular, auch ohne Projekt.
     func startTimer() async {
-        guard canStartTimer, let projectID = draft.projectID,
-              let project = projects.first(where: { $0.id == projectID }) else { return }
-        if let organization, organization.lacksEmployee(for: project) {
-            saveError = missingEmployeeMessage(for: project)
-            return
+        guard canStartTimer else { return }
+        var project: Project?
+        if let projectID = draft.projectID {
+            guard let chosen = projects.first(where: { $0.id == projectID }) else { return }
+            if let organization, organization.lacksEmployee(for: chosen) {
+                saveError = missingEmployeeMessage(for: chosen)
+                return
+            }
+            project = chosen
         }
         saveError = nil
         let submitted = draft
-        let taskID = taskIsRequired ? draft.taskID : nil
+        let taskID = project != nil && taskIsRequired ? draft.taskID : nil
         guard await beginTimer(project: project, taskID: taskID, taskName: taskID == nil ? nil : selectedTaskName,
                                description: draft.description.trimmed) else { return }
         // Was während des Startens schon getippt wurde, bleibt stehen.
@@ -1664,7 +1717,7 @@ final class AppModel {
     /// Erneut starten geht, solange das Projekt des Eintrags Buchungen annimmt und nicht genau diese Zeit
     /// schon läuft.
     func canStartTimer(like entry: TimesheetEntry) -> Bool {
-        guard timesheetsActive, !isStoppingTimer, let projectID = entry.project?.id,
+        guard timesheetsActive, !isStoppingTimer, !runningTimerLacksProject, let projectID = entry.project?.id,
               projects.contains(where: { $0.id == projectID }) else { return false }
         guard let timer = runningTimer, timer.end == nil else { return true }
         return !(timer.projectID == projectID && timer.taskID == entry.task?.id && timer.description == entry.description)
@@ -1680,32 +1733,47 @@ final class AppModel {
         await beginTimer(project: project, taskID: entry.task?.id, taskName: entry.task?.name, description: entry.description)
     }
 
-    /// Ein Timer zur Zeit: Eine laufende Zeit wird bis zum neuen Start gebucht. Scheitert das, startet nichts.
+    /// Ein Timer zur Zeit: Eine laufende Zeit wird bis zum neuen Start gebucht. Scheitert das oder fehlen ihr
+    /// Angaben, startet nichts.
     @discardableResult
-    private func beginTimer(project: Project, taskID: Int?, taskName: String?, description: String) async -> Bool {
+    private func beginTimer(project: Project?, taskID: Int?, taskName: String?, description: String) async -> Bool {
         guard let account = session?.keychainAccount else { return false }
         let start = clock()
         timerNotice = nil
         var booking = TimerBooking.nothing
         if runningTimer != nil { booking = await bookTimer(until: start) }
-        guard booking != .failed else { return false }
-        preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: project.id, projectName: project.name,
+        switch booking {
+        case .failed:
+            return false
+        case .needsDetails:
+            beginBookingTimer()
+            return false
+        case .booked, .nothing:
+            break
+        }
+        preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: project?.id, projectName: project?.name,
                                                             taskID: taskID, taskName: taskName, description: description,
                                                             start: start)
-        recentProjectIDs = [project.id] + recentProjectIDs.filter { $0 != project.id }
+        if let project { recentProjectIDs = [project.id] + recentProjectIDs.filter { $0 != project.id } }
         if booking == .booked { await refresh(force: true) }
         return true
     }
 
-    /// Stoppt die Zeit und bucht sie.
+    /// Stoppt die Zeit und bucht sie. Fehlen Projekt oder Aufgabe, kommt sie dafür ins Formular.
     func stopTimer() async {
-        if await bookTimer(until: clock()) == .booked { await refresh(force: true) }
+        switch await bookTimer(until: clock()) {
+        case .booked: await refresh(force: true)
+        case .needsDetails: beginBookingTimer()
+        case .nothing, .failed: break
+        }
     }
 
     private enum TimerBooking {
         case booked
         case nothing
         case failed
+        /// Projekt oder Aufgabe fehlen; die Zeit steht gestoppt, bis sie im Formular gebucht wird.
+        case needsDetails
     }
 
     /// Bucht die Zeit auf den Tag, an dem sie begann, gerundet wie in den Einstellungen. Unter einer Minute
@@ -1721,21 +1789,33 @@ final class AppModel {
         guard seconds >= 60 else {
             preferences.runningTimer = nil
             timerError = nil
+            if timerEditing != nil { finishEditing() }
             timerNotice = TimerNotice(kind: .info, text: String(localized: "Weniger als eine Minute, nichts gebucht."))
             return .nothing
         }
+        guard let projectID = timer.projectID else {
+            timerError = nil
+            return .needsDetails
+        }
         let measured = Int((Double(seconds) / 60).rounded())
         let minutes = preferences.durationRounding.minutes.map { DurationInput.rounded(measured, toNearest: $0) } ?? measured
-        let request = TimesheetDraft(projectID: timer.projectID, taskID: timer.taskID, description: timer.description.trimmed,
+        let request = TimesheetDraft(projectID: projectID, taskID: timer.taskID, description: timer.description.trimmed,
                                      minutes: minutes, day: CalendarDay(date: timer.start, calendar: calendar))
         let token = sessionToken
         isStoppingTimer = true
         timerError = nil
         do {
+            // Ohne Aufgabe bucht die App nur, wenn das Projekt keine offenen Aufgaben hat; sonst fehlt sie noch.
+            if timer.taskID == nil, try await !openTasks(of: projectID, service: service).isEmpty {
+                guard token == sessionToken else { return .failed }
+                isStoppingTimer = false
+                return .needsDetails
+            }
             let createdID = try await create(request, service: service)
             guard token == sessionToken else { return .failed }
             isStoppingTimer = false
             preferences.runningTimer = nil
+            if timerEditing != nil { finishEditing() }
             if let createdID { insertSaved(createdID, request, taskName: timer.taskName) }
             let duration = DurationInput.format(minutes)
             timerNotice = TimerNotice(kind: .done, text: minutes == measured
@@ -1760,11 +1840,110 @@ final class AppModel {
     private func discardTimer() {
         preferences.runningTimer = nil
         timerError = nil
+        if timerEditing != nil { finishEditing() }
         timerNotice = TimerNotice(kind: .info, text: String(localized: "Laufende Zeit verworfen, nichts gebucht."))
     }
 
     func dismissTimerNotice() {
         timerNotice = nil
+    }
+
+    /// Öffnet Projekt, Aufgabe und Beschreibung der Zeit im Formular; ist sie schon gestoppt, mit Dauer zum Buchen.
+    func beginEditingTimer() {
+        guard let timer = runningTimer, !isStoppingTimer else { return }
+        if timer.end != nil {
+            beginBookingTimer()
+        } else {
+            openTimerInForm(.running, timer: timer, durationText: "")
+        }
+    }
+
+    /// Gestoppte Zeit, der Projekt oder Aufgabe fehlen: ins Formular, mit der gemessenen Dauer.
+    func beginBookingTimer() {
+        guard let timer = runningTimer, timer.end != nil else { return }
+        let measured = Int((Double(Self.seconds(of: timer, until: clock())) / 60).rounded())
+        openTimerInForm(.booking, timer: timer, durationText: DurationInput.format(measured))
+    }
+
+    /// Was dort für einen neuen Eintrag stand, kommt danach zurück, wie beim Bearbeiten eines Eintrags.
+    private func openTimerInForm(_ mode: TimerEditing, timer: Preferences.RunningTimer, durationText: String) {
+        guard timesheetsActive, !isSaving else { return }
+        if editingEntry == nil, timerEditing == nil { draftBeforeEditing = draft }
+        editingEntry = nil
+        timerEditing = mode
+        draft = Draft(projectID: timer.projectID, taskID: timer.taskID, description: timer.description,
+                      durationText: durationText)
+        saveError = nil
+        taskLoadError = nil
+        if let projectID = timer.projectID { Task { await loadTasks(projectID: projectID) } }
+    }
+
+    /// Übernimmt Projekt, Aufgabe und Beschreibung aus dem Formular in die laufende Zeit.
+    private func applyTimerEditing() {
+        guard var timer = runningTimer, canSave else { return }
+        let project = draft.projectID.flatMap { id in projects.first { $0.id == id } }
+        if let project, let organization, organization.lacksEmployee(for: project) {
+            saveError = missingEmployeeMessage(for: project)
+            return
+        }
+        timer.projectID = project?.id
+        timer.projectName = project?.name
+        timer.taskID = project != nil && taskIsRequired ? draft.taskID : nil
+        timer.taskName = timer.taskID == nil ? nil : selectedTaskName
+        timer.description = draft.description.trimmed
+        preferences.runningTimer = timer
+        finishEditing()
+    }
+
+    /// Bucht die gestoppte Zeit mit den Angaben aus dem Formular auf den Tag, an dem sie begann.
+    private func bookTimerFromForm() async {
+        guard let timer = runningTimer, let service, canSave, let projectID = draft.projectID,
+              let minutes = draftMinutes else { return }
+        if let organization, let project = projects.first(where: { $0.id == projectID }), organization.lacksEmployee(for: project) {
+            saveError = missingEmployeeMessage(for: project)
+            return
+        }
+        let taskID = taskIsRequired ? draft.taskID : nil
+        let taskName = taskID == nil ? nil : selectedTaskName
+        let path = [selectedProjectName, taskName].compactMap { $0 }.joined(separator: " › ")
+        let request = TimesheetDraft(projectID: projectID, taskID: taskID, description: draft.description.trimmed,
+                                     minutes: minutes, day: CalendarDay(date: timer.start, calendar: calendar))
+        let token = sessionToken
+        isSaving = true
+        saveError = nil
+        do {
+            let createdID = try await create(request, service: service)
+            guard token == sessionToken else { return }
+            isSaving = false
+            preferences.runningTimer = nil
+            timerError = nil
+            if let createdID { insertSaved(createdID, request, taskName: taskName) }
+            recentProjectIDs = [projectID] + recentProjectIDs.filter { $0 != projectID }
+            finishEditing()
+            timerNotice = TimerNotice(kind: .done, text: String(localized: "\(DurationInput.format(minutes)) Std. gebucht auf \(path)."))
+            await refresh(force: true)
+        } catch {
+            guard token == sessionToken else { return }
+            isSaving = false
+            saveError = Self.message(for: error)
+            if case .unauthorized? = error as? OdooError { handle(error) }
+        }
+    }
+
+    /// Tag, auf den die Zeit gebucht wird: der, an dem sie begann.
+    var timerDayShortDate: String {
+        guard let timer = runningTimer else { return dayShortDate }
+        return Formatting.shortDate(CalendarDay(date: timer.start, calendar: calendar))
+    }
+
+    /// Offene Aufgaben eines Projekts, aus dem Zwischenspeicher, solange er frisch ist, sonst aus Odoo.
+    private func openTasks(of projectID: Int, service: OdooService) async throws -> [ProjectTask] {
+        if let tasks = tasksByProject[projectID], let loaded = taskLoadDates[projectID],
+           clock().timeIntervalSince(loaded) < 600 { return tasks }
+        let tasks = try await service.tasks(projectID: projectID)
+        tasksByProject[projectID] = tasks
+        taskLoadDates[projectID] = clock()
+        return tasks
     }
 
     // MARK: - Mehrere Firmen

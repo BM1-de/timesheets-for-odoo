@@ -202,6 +202,127 @@ struct TimerTests {
         #expect(!model.offersTimerStart)
     }
 
+    @Test("ohne Projekt starten; beim Stoppen im Formular zuordnen und buchen")
+    func startWithoutProject() async throws {
+        let odoo = FakeOdoo()
+        let clock = MovingClock()
+        let model = try await signedIn(odoo, clock: clock)
+        model.preferences.durationRounding = .quarterHour
+        try await fillDraft(model)
+        #expect(model.offersQuickStart)
+
+        await model.startTimerNow()
+        let timer = try #require(model.runningTimer)
+        #expect(timer.projectID == nil && timer.taskID == nil && timer.description.isEmpty)
+        #expect(model.timerPathText == "Projekt fehlt")
+        #expect(!model.offersQuickStart)
+        // Solange sie ohne Projekt läuft, startet keine neue; das Formular bleibt, wie es war.
+        #expect(!model.canStartTimer)
+        #expect(model.draft.description == "Titelseite")
+
+        clock.advance(by: 42 * 60)
+        await model.stopTimer()
+        #expect(odoo.withLock { odoo.lines.isEmpty })
+        #expect(model.timerEditing == .booking)
+        #expect(model.runningTimer?.end == clock.now)
+        #expect(model.draft.projectID == nil && model.draft.durationText == "0:42")
+        #expect(!model.canSave)
+        model.selectProject(try #require(model.projects.first { $0.id == 3 }))
+        await model.loadTasks(projectID: 3)
+        model.draft.taskID = 32
+        model.draft.description = "Satz"
+        #expect(model.canSave)
+        await model.save()
+        #expect(model.runningTimer == nil && model.timerEditing == nil)
+        let line = try #require(odoo.withLock { odoo.lines.first })
+        #expect(line.projectID == 3 && line.taskID == 32 && line.name == "Satz")
+        #expect(line.hours == 0.75 && line.date == "2026-10-23")
+        #expect(model.timerNotice?.text == "0:45 Std. gebucht auf Kundenmagazin (Beispiel AG) › Layout.")
+        // Was im Formular für einen neuen Eintrag stand, ist wieder da.
+        #expect(model.draft.description == "Titelseite" && model.draft.projectID == 3)
+    }
+
+    @Test("Projekt, Aufgabe und Beschreibung lassen sich ändern, solange die Zeit läuft")
+    func editWhileRunning() async throws {
+        let odoo = FakeOdoo()
+        let clock = MovingClock()
+        let model = try await signedIn(odoo, clock: clock)
+        try await fillDraft(model)
+        await model.startTimerNow()
+
+        model.beginEditingTimer()
+        #expect(model.timerEditing == .running)
+        #expect(model.draft.projectID == nil && model.draft.description.isEmpty)
+        #expect(!model.offersTimerStart)
+        #expect(model.canSave)
+        model.selectProject(try #require(model.projects.first { $0.id == 3 }))
+        await model.loadTasks(projectID: 3)
+        #expect(!model.canSave)
+        model.draft.taskID = 32
+        model.draft.description = " Satz "
+        await model.save()
+        #expect(model.timerEditing == nil)
+        let timer = try #require(model.runningTimer)
+        #expect(timer.projectID == 3 && timer.taskID == 32 && timer.description == "Satz" && timer.end == nil)
+        #expect(model.timerPathText == "Kundenmagazin (Beispiel AG) › Layout")
+        #expect(model.draft.description == "Titelseite")
+
+        clock.advance(by: 30 * 60)
+        await model.stopTimer()
+        #expect(model.runningTimer == nil)
+        #expect(odoo.withLock { odoo.lines.map(\.hours) } == [0.5])
+    }
+
+    @Test("ohne Projekt gestoppt: Abbrechen lässt die Zeit stehen, Verwerfen räumt auf")
+    func stoppedWithoutProject() async throws {
+        let odoo = FakeOdoo()
+        odoo.withLock {
+            odoo.lines = [.init(id: 1, date: "2026-10-23", name: "Plugin-Updates", projectID: 2, taskID: 21, hours: 0.5)]
+        }
+        let clock = MovingClock()
+        let model = try await signedIn(odoo, clock: clock)
+        try await fillDraft(model)
+        await model.startTimerNow()
+        let entry = try #require(model.entries.first)
+        #expect(!model.canStartTimer(like: entry))
+        clock.advance(by: 20 * 60)
+        await model.stopTimer()
+        #expect(model.timerEditing == .booking)
+        model.cancelEditing()
+        #expect(model.timerEditing == nil && model.runningTimer?.end != nil)
+        #expect(model.draft.description == "Titelseite")
+
+        // Ein Klick auf die Zeit öffnet sie wieder zum Buchen, mit der Dauer bis zum Stopp.
+        clock.advance(by: 5 * 60)
+        model.beginEditingTimer()
+        #expect(model.timerEditing == .booking && model.draft.durationText == "0:20")
+        model.requestDiscardTimer()
+        await model.confirmDeletion()
+        #expect(model.runningTimer == nil && model.timerEditing == nil)
+        #expect(model.draft.description == "Titelseite")
+        #expect(odoo.withLock { odoo.lines.count } == 1)
+    }
+
+    @Test("fehlt die Aufgabe, obwohl das Projekt welche hat, kommt die Zeit beim Stoppen ins Formular")
+    func stopWithoutRequiredTask() async throws {
+        let odoo = FakeOdoo()
+        let clock = MovingClock()
+        let model = try await signedIn(odoo, clock: clock)
+        let account = try #require(model.session?.keychainAccount)
+        model.preferences.runningTimer = Preferences.RunningTimer(account: account, projectID: 3,
+                                                                  projectName: "Kundenmagazin (Beispiel AG)", taskID: nil,
+                                                                  taskName: nil, description: "Satz", start: clock.now)
+        clock.advance(by: 15 * 60)
+        await model.stopTimer()
+        #expect(odoo.withLock { odoo.lines.isEmpty })
+        #expect(model.timerEditing == .booking)
+        #expect(model.draft.projectID == 3 && model.draft.durationText == "0:15")
+        model.draft.taskID = 32
+        await model.save()
+        #expect(odoo.withLock { odoo.lines.map(\.taskID) } == [32])
+        #expect(model.runningTimer == nil)
+    }
+
     @Test("übersteht einen Neustart; Abmelden verwirft die Zeit")
     func survivesRestart() async throws {
         let odoo = FakeOdoo()

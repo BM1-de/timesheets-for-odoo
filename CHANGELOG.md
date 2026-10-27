@@ -2,12 +2,15 @@
 
 ## Unreleased
 
-- Timer: without a duration, “Start” in the form starts the time for project, task and
-  description; ▶ on an entry (or “Start Again” in its context menu) starts the same work again.
-  One timer at a time: starting another books the running one. Stop books right away on the
-  day the timer started, rounded as set; under a minute nothing is booked. The description can
-  be changed while it runs, the trash discards it after a confirmation, and it keeps running when
-  the app quits. If booking fails, the time stays stopped until a retry succeeds.
+- Timer: “Start” at the top of the window starts the time right away; project, task and
+  description can be chosen while it runs (click the project line) or when stopping, where the
+  form books it with the measured duration. Without a duration, “Start” in the form starts the
+  time for project, task and description; ▶ on an entry (or “Start Again” in its context menu)
+  starts the same work again. One timer at a time: starting another books the running one, and a
+  timer without a project needs one first. Stop books right away on the day the timer started,
+  rounded as set; under a minute nothing is booked. The trash discards it after a confirmation,
+  and it keeps running when the app quits. If booking fails, the time stays stopped until a retry
+  succeeds.
 - The menu bar shows only the clock icon, and the running timer's hours and minutes next to it.
   Attendance and the green dot are no longer shown there; checking in and out stays in the
   window. Settings › Menu bar has one switch, “Show running timer”.

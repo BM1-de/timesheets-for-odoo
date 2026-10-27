@@ -1180,6 +1180,22 @@
         }
       }
     },
+    "Buchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer"
+          }
+        }
+      }
+    },
     "Copyright © 2026 Baumgärtner Marketing GmbH. Freie Software unter der GNU Affero General Public License, Version 3 oder neuer, ohne jede Gewährleistung. Odoo ist eine Marke der Odoo S.A.; dieses Projekt steht in keiner Verbindung zu Odoo S.A." : {
       "localizations" : {
         "en" : {
@@ -1752,6 +1768,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Le minuteur reste arrêté jusqu’à l’enregistrement du temps."
+          }
+        }
+      }
+    },
+    "Die laufende Zeit braucht erst ein Projekt, dann startet eine neue." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Give the running timer a project before starting a new one."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Attribuez d’abord un projet au minuteur en cours avant d’en démarrer un nouveau."
           }
         }
       }
@@ -2815,6 +2847,22 @@
         }
       }
     },
+    "Laufende Zeit" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Running Timer"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Minuteur en cours"
+          }
+        }
+      }
+    },
     "Laufende Zeit verwerfen?" : {
       "localizations" : {
         "en" : {
@@ -3538,6 +3586,22 @@
         }
       }
     },
+    "Projekt fehlt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "No project"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Aucun projet"
+          }
+        }
+      }
+    },
     "Projekt oder Kunde suchen" : {
       "localizations" : {
         "en" : {
@@ -3582,6 +3646,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Choisir un projet"
+          }
+        }
+      }
+    },
+    "Projekt, Aufgabe und Beschreibung ändern" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Change project, task and description"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Modifier le projet, la tâche et la description"
           }
         }
       }
@@ -3902,6 +3982,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Démarrer enregistre d’abord le minuteur en cours."
+          }
+        }
+      }
+    },
+    "Startet die Zeit jetzt. Projekt und Aufgabe wählst du, während sie läuft, oder beim Stoppen." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Starts the timer now. Choose the project and task while it runs or when you stop it."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Démarre le minuteur maintenant. Choisissez le projet et la tâche pendant qu’il tourne ou à l’arrêt."
           }
         }
       }
@@ -4610,6 +4706,22 @@
         }
       }
     },
+    "Zeit buchen" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Book Time"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Enregistrer le temps"
+          }
+        }
+      }
+    },
     "Zeiteinträge konnten nicht geladen werden." : {
       "localizations" : {
         "en" : {
@@ -4846,6 +4958,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "Ouvre la saisie pour la modifier"
+          }
+        }
+      }
+    },
+    "Zum Buchen fehlt noch das Projekt." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choose a project to book this time."
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Choisissez un projet pour enregistrer ce temps."
           }
         }
       }
