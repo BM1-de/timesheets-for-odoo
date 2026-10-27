@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.0 – 2026-10-27
 
 - Menu bar: Settings › Menu bar › “Time in the menu bar” chooses what stands next to the icon:
   “Automatic” (the running timer, otherwise today's project time), the running timer only,
