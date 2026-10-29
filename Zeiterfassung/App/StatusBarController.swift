@@ -221,6 +221,31 @@ final class StatusBarController: NSObject {
         return PanelGeometry(button: buttonFrame, panel: panel.frame, content: content.frame, visible: visible,
                              measured: contentHeight)
     }
+
+    /// Öffnet die Menüs im Fenster nacheinander kurz und liest ihre Einträge ohne Trennlinien, für die
+    /// Fensterprüfung. SwiftUI füllt ein `Menu` erst beim Öffnen.
+    func panelMenuTitles() -> [[String]] {
+        var buttons: [NSPopUpButton] = []
+        func collect(_ view: NSView) {
+            if let button = view as? NSPopUpButton { buttons.append(button) }
+            view.subviews.forEach(collect)
+        }
+        if let content = panel?.contentView { collect(content) }
+        return buttons.compactMap { button in
+            guard let menu = button.menu else { return nil }
+            openMenuTitles = []
+            perform(#selector(readOpenMenu(_:)), with: menu, afterDelay: 0.3, inModes: [.common])
+            button.performClick(nil)
+            return openMenuTitles
+        }
+    }
+
+    private var openMenuTitles: [String] = []
+
+    @objc private func readOpenMenu(_ menu: NSMenu) {
+        openMenuTitles = menu.items.filter { !$0.isSeparatorItem }.map(\.title)
+        menu.cancelTracking()
+    }
     #endif
 
     /// Unter das Symbol, waagerecht mittig, innerhalb des Bildschirms.

@@ -6,7 +6,8 @@
 import AppKit
 
 /// Öffnet das Fenster unter dem Menüleistensymbol mit erfundenen Daten und prüft, ob es direkt
-/// unter dem Symbol hängt und so hoch ist wie sein Inhalt. Nur in Entwicklungs-Builds:
+/// unter dem Symbol hängt und so hoch ist wie sein Inhalt und ob das Zahnrad-Menü dieselben Befehle
+/// bietet wie das Kontextmenü des Symbols. Nur in Entwicklungs-Builds:
 ///
 ///     Zeiterfassung.app/Contents/MacOS/Zeiterfassung -panelCheck YES
 ///
@@ -31,7 +32,7 @@ enum PanelCheck {
         let defaults = ScratchDefaults.make("fensterpruefung")
         let model = AppModel(preferences: Preferences(defaults: defaults), http: odoo.client(), secrets: MemorySecretStore())
         await model.start()
-        let controller = StatusBarController(model: model, openSettings: {})
+        let controller = StatusBarController(model: model, updates: Updates(), openSettings: {})
         statusBar = controller
         // Beim ersten Start unter einer Kennung rückt die Menüleiste das Symbol erst nach einer Weile zurecht.
         try? await Task.sleep(for: .seconds(1))
@@ -44,6 +45,7 @@ enum PanelCheck {
         model.finishSignIn()
         try? await Task.sleep(for: .seconds(1))
         passed = report("Tag", controller) && passed
+        passed = reportMenu(controller) && passed
 
         // Kleiner werden, während das Fenster offen ist
         model.setTimesheetsEnabled(false)
@@ -80,6 +82,18 @@ enum PanelCheck {
               + "Inhalt \(geometry.content), gemessen \(geometry.measured)"
               + (problems.isEmpty ? "" : " – " + problems.joined(separator: ", ")))
         return problems.isEmpty
+    }
+
+    private static func reportMenu(_ controller: StatusBarController) -> Bool {
+        let expected = [String(localized: "Aktualisieren"), String(localized: "Einstellungen …"),
+                        String(localized: "Nach Updates suchen …"), String(localized: "\(AppInfo.name) beenden")]
+        guard let titles = controller.panelMenuTitles().first(where: { $0.contains(expected[1]) }) else {
+            print("✘ Zahnrad-Menü: nicht gefunden")
+            return false
+        }
+        let matches = titles == expected
+        print("\(matches ? "✔" : "✘") Zahnrad-Menü: \(titles.joined(separator: " · "))")
+        return matches
     }
 }
 #endif

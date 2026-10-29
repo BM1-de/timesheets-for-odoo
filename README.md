@@ -153,8 +153,8 @@ Die App fragt einmal am Tag die Versionsliste
 [`appcast.xml`](https://github.com/BM1-de/timesheets-for-odoo/releases/latest/download/appcast.xml)
 des neuesten Releases ab. Gibt es eine neue Version, erscheint im Fenster unter der Menüleiste
 *Version … ist verfügbar* mit *Installieren …*; die App lädt sie, ersetzt sich und startet neu.
-Von Hand: *Nach Updates suchen …* im Kontextmenü des Uhrsymbols oder in den Einstellungen, wo sich
-die tägliche Suche auch abschalten lässt.
+Von Hand: *Nach Updates suchen …* im Menü hinter dem Zahnrad, im Kontextmenü des Uhrsymbols oder
+in den Einstellungen, wo sich die tägliche Suche auch abschalten lässt.
 
 Dafür nutzt die App [Sparkle](https://sparkle-project.org). Sie installiert nur Versionen, deren
 DMG mit dem Schlüssel des Projekts signiert ist und deren App dieselbe Developer ID trägt. Außer

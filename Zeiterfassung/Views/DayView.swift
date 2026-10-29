@@ -189,6 +189,7 @@ struct NoFeatureCard: View {
 
 struct PanelFooter: View {
     @Environment(AppModel.self) private var model
+    @Environment(Updates.self) private var updates: Updates?
     @Environment(\.openURL) private var openURL
     var onOpenSettings: @MainActor () -> Void
 
@@ -209,9 +210,13 @@ struct PanelFooter: View {
             }
             Spacer()
             // Die Tastenkürzel ⌘R, ⌘, und ⌘Q gelten im ganzen Fenster (DayView und Hauptmenü).
+            // Dieselben Befehle wie im Kontextmenü des Symbols; die Fassung aus dem App Store hat keine Update-Suche.
             Menu {
                 Button("Aktualisieren") { Task { await model.refresh(force: true) } }
                 Button("Einstellungen …") { onOpenSettings() }
+                if let updates {
+                    Button("Nach Updates suchen …") { updates.checkForUpdates() }
+                }
                 Divider()
                 Button("\(AppInfo.name) beenden") { NSApp.terminate(nil) }
             } label: {

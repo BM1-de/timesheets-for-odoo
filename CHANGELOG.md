@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- The gear menu at the bottom of the window offers “Check for Updates…” too, like the context menu
+  of the menu bar icon.
+
 ## 0.4.1 – 2026-10-29
 
 - Menu bar: the green dot before the icon is back while you are checked in, whatever time stands
