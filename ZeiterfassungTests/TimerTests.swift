@@ -139,6 +139,7 @@ struct TimerTests {
         }
         let clock = MovingClock()
         let model = try await signedIn(odoo, clock: clock)
+        model.preferences.durationRounding = .off
         try await fillDraft(model)
         await model.startTimer()
         clock.advance(by: 10 * 60)
@@ -161,6 +162,7 @@ struct TimerTests {
         let odoo = FakeOdoo()
         let clock = MovingClock()
         let model = try await signedIn(odoo, clock: clock)
+        model.preferences.durationRounding = .off
         try await fillDraft(model)
         await model.startTimer()
         clock.advance(by: 20 * 60)

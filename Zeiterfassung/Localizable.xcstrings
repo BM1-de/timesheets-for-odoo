@@ -5362,6 +5362,22 @@
         }
       }
     },
+    "eingestempelt" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "checked in"
+          }
+        },
+        "fr" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "pointé"
+          }
+        }
+      }
+    },
     "freigegeben" : {
       "localizations" : {
         "en" : {

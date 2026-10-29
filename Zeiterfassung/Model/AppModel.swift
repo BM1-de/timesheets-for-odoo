@@ -55,6 +55,8 @@ final class AppModel {
         }
 
         var symbol: Symbol = .clock
+        /// Grüner Punkt vor dem Symbol, solange eingestempelt.
+        var showsDot = false
         var text: String
         var isSignedIn: Bool
         var accessibilityLabel: String
@@ -2073,7 +2075,8 @@ final class AppModel {
     }
 
     /// Symbol und die eingestellte Zeit: die Stoppuhr mit der laufenden Projektzeit, die Uhr mit der Projektzeit
-    /// von heute, die Person mit der Anwesenheit. Steht noch nichts zu Buche, nur die Uhr.
+    /// von heute, die Person mit der Anwesenheit. Steht noch nichts zu Buche, nur die Uhr. Davor ein grüner Punkt,
+    /// solange eingestempelt, gleich welche Zeit dasteht.
     var menuBarContent: MenuBarContent {
         guard screen == .main, session != nil else {
             return MenuBarContent(text: "", isSignedIn: false,
@@ -2099,6 +2102,10 @@ final class AppModel {
             content.symbol = .person
             content.text = DurationInput.format(todayAttendanceMinutes)
             content.accessibilityLabel = "\(AppInfo.name), \(spoken)"
+        }
+        if attendanceActive, openPeriod != nil {
+            content.showsDot = true
+            content.accessibilityLabel += ", " + String(localized: "eingestempelt")
         }
         return content
     }

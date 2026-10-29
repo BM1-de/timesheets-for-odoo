@@ -147,10 +147,9 @@ final class Preferences {
         return time
     }
 
-    /// Bis Version 0.2 gab es nur den Schalter „Dauer auf Viertelstunden runden“, ab Werk an. Wer sich
-    /// schon einmal angemeldet hat, rundet deshalb weiter auf 15 Minuten, sonst wie eingestellt; neu ist ab
-    /// Werk „Nicht runden“. Das Ergebnis wird gleich gespeichert, damit eine spätere Anmeldung nichts mehr
-    /// ändert.
+    /// Ab Werk 15 Minuten. Bis Version 0.2 gab es nur den Schalter „Dauer auf Viertelstunden runden“; wer ihn
+    /// ausgeschaltet hat, rundet weiter nicht. Neue Installationen von 0.3 und 0.4.0 starteten mit „Nicht
+    /// runden“ und behalten es, weil das Ergebnis gleich gespeichert wird.
     private static func durationRounding(in defaults: UserDefaults) -> DurationRounding {
         if let value = defaults.object(forKey: Key.durationRounding) as? Int {
             return DurationRounding(rawValue: value) ?? .off
@@ -158,10 +157,8 @@ final class Preferences {
         let rounding: DurationRounding
         if let quarterHour = defaults.object(forKey: Key.quarterHour) as? Bool {
             rounding = quarterHour ? .quarterHour : .off
-        } else if defaults.object(forKey: Key.loginHints) != nil {
-            rounding = .quarterHour
         } else {
-            rounding = .off
+            rounding = .quarterHour
         }
         defaults.set(rounding.rawValue, forKey: Key.durationRounding)
         defaults.removeObject(forKey: Key.quarterHour)

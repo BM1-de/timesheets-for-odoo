@@ -17,8 +17,8 @@ Projektzeit von heute oder die Anwesenheit.
 
 - **Zeiteinträge:** Projekt (mit Suche, zuletzt verwendete oben), Aufgabe, Beschreibung und
   Dauer. Die Dauer versteht `1:30`, `1,5`, `90 min` oder `1h30`, auch mit englischen und
-  französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf Wunsch auf 15, 30 oder 60
-  Minuten gerundet. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
+  französischen Einheiten (`2 hours`, `1 heure 30`), und wird auf 15, 30 oder 60 Minuten gerundet
+  (ab Werk 15) oder gar nicht. Die Einträge des Tages stehen mit Summe darüber; frühere Tage lassen
   sich durchblättern und nachtragen.
 - **Projekt-Timer:** Ohne Dauer startet „Starten“ im Formular die Zeit für Projekt, Aufgabe und
   Beschreibung, auch ganz ohne Angaben; was fehlt, wählst du, während sie läuft (Klick auf die
@@ -42,6 +42,7 @@ Projektzeit von heute oder die Anwesenheit.
 - **Menüleiste:** neben dem Symbol wahlweise die laufende Projektzeit, die Projektzeit von heute
   oder die Anwesenheit; ab Werk „Automatisch“, also die laufende Projektzeit und sonst die von
   heute. Stoppuhr, Uhr oder Person zeigen, welche Zeit dasteht, der Tooltip am Symbol nennt alle.
+  Ein grüner Punkt vor dem Symbol zeigt, dass du eingestempelt bist.
 - **Funktionen einzeln:** Zeiterfassung und Anwesenheit lassen sich getrennt einschalten. Beim
   Verbinden prüft die App, welche Odoo-Apps installiert sind und welche Rechte der Benutzer hat;
   was fehlt, bleibt mit Begründung ausgeschaltet.

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.1 – 2026-10-29
+
+- Menu bar: the green dot before the icon is back while you are checked in, whatever time stands
+  next to it; VoiceOver adds “checked in”.
+- New installations round durations to 15 minutes (Settings › “Round durations when booking”).
+  Existing settings stay as they are, “Don’t round” included.
+
 ## 0.4.0 – 2026-10-27
 
 - Menu bar: Settings › Menu bar › “Time in the menu bar” chooses what stands next to the icon:

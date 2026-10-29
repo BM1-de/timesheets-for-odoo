@@ -9,11 +9,11 @@ import Testing
 @MainActor
 @Suite("Einstellungen")
 struct PreferencesTests {
-    @Test("neu installiert wird nicht gerundet")
+    @Test("neu installiert wird auf 15 Minuten gerundet")
     func roundingDefault() {
         let defaults = ScratchDefaults.make("zeiterfassung-tests")
-        #expect(Preferences(defaults: defaults).durationRounding == .off)
-        #expect(defaults.object(forKey: "duration.rounding") as? Int == 0)
+        #expect(Preferences(defaults: defaults).durationRounding == .quarterHour)
+        #expect(defaults.object(forKey: "duration.rounding") as? Int == 15)
     }
 
     @Test("der Schalter bis Version 0.2 wird zur Auswahl", arguments: [
@@ -27,12 +27,11 @@ struct PreferencesTests {
         #expect(defaults.object(forKey: "duration.roundToQuarterHour") == nil)
     }
 
-    @Test("wer schon angemeldet war und den Schalter nie geändert hat, rundet weiter auf 15 Minuten")
-    func keepsRoundingOfExistingUsers() {
+    @Test("„Nicht runden“ aus einer Installation von 0.3 oder 0.4.0 bleibt")
+    func keepsStoredOff() {
         let defaults = ScratchDefaults.make("zeiterfassung-tests")
-        Preferences(defaults: defaults).loginHints = .init(server: "https://odoo.example.de", login: nil, database: nil)
-        defaults.removeObject(forKey: "duration.rounding")
-        #expect(Preferences(defaults: defaults).durationRounding == .quarterHour)
+        defaults.set(0, forKey: "duration.rounding")
+        #expect(Preferences(defaults: defaults).durationRounding == .off)
     }
 
     @Test("die Auswahl bleibt gespeichert")

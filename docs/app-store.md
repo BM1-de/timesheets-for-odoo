@@ -68,6 +68,7 @@ ANWESENHEIT
 MENÜLEISTE
 • Wahlweise laufende Projektzeit, Projektzeit von heute oder Anwesenheit
 • Stoppuhr, Uhr oder Person zeigen, welche Zeit dasteht
+• Grüner Punkt vor dem Symbol, solange du eingestempelt bist
 • Der Tooltip am Symbol nennt alle Zeiten von heute
 
 Für Odoo 17, 18 und 19, Community und Enterprise, selbst betrieben, auf Odoo.sh oder Odoo Online. Nötig sind die Odoo-Apps Zeiterfassung und/oder Anwesenheiten und ein API-Schlüssel deines Odoo-Benutzers. Die App spricht nur mit deinem Odoo; der Schlüssel liegt im Schlüsselbund deines Mac.
@@ -112,6 +113,7 @@ ATTENDANCE
 MENU BAR
 • Your choice: the running timer, today's project time or attendance
 • A stopwatch, clock or person shows which time it is
+• A green dot before the icon while you are checked in
 • The tooltip on the icon lists all of today's times
 
 For Odoo 17, 18 and 19, Community and Enterprise, self-hosted, on Odoo.sh or Odoo Online. Requires the Odoo apps Timesheets and/or Attendances and an API key of your Odoo user. The app only talks to your Odoo; the key is stored in your Mac's keychain.
@@ -156,6 +158,7 @@ PRÉSENCE
 BARRE DES MENUS
 • Au choix : le minuteur en cours, le temps de projet du jour ou la présence
 • Chronomètre, horloge ou personne indiquent de quel temps il s’agit
+• Un point vert devant l’icône tant que l’arrivée est pointée
 • La bulle d’aide de l’icône indique tous les temps du jour
 
 Pour Odoo 17, 18 et 19, Community et Enterprise, auto-hébergé, sur Odoo.sh ou Odoo Online. Nécessite les applications Odoo Feuilles de temps et/ou Présences et une clé API de votre utilisateur Odoo. L’app ne communique qu’avec votre Odoo ; la clé est enregistrée dans le trousseau de votre Mac.

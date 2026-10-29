@@ -148,7 +148,8 @@ struct AppModelTests {
     @Test("Dauer: Rundung, Hinweise, −/+")
     func duration() async throws {
         let model = try await signedIn(FakeOdoo())
-        #expect(model.preferences.durationRounding == .off)
+        #expect(model.preferences.durationRounding == .quarterHour)
+        model.preferences.durationRounding = .off
         model.draft.durationText = "1:20"
         #expect(model.draftMinutes == 80)
         #expect(model.durationHint == nil)
@@ -198,11 +199,16 @@ struct AppModelTests {
         #expect(summary.buttonTitle == "Ausstempeln")
         #expect(summary.unbookedText == "5:58 Std.")
         #expect(model.menuBarContent.text.isEmpty)
+        #expect(model.menuBarContent.showsDot)
+        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), eingestempelt")
         #expect(model.menuBarContent.toolTip == "Projektzeit heute 0:00 Std.\nAnwesend seit 12:47 · heute 5:58 Std.")
         model.preferences.menuBarTime = .attendanceToday
         #expect(model.menuBarContent.text == "5:58")
         #expect(model.menuBarContent.symbol == .person)
-        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Anwesenheit heute 5 Stunden 58 Minuten")
+        #expect(model.menuBarContent.showsDot)
+        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Anwesenheit heute 5 Stunden 58 Minuten, eingestempelt")
+        model.preferences.menuBarTime = .symbolOnly
+        #expect(model.menuBarContent.showsDot)
 
         await model.toggleAttendance()
         #expect(model.stampError == nil)
@@ -210,7 +216,10 @@ struct AppModelTests {
         #expect(!summary.isRunning)
         #expect(summary.title == "Ausgestempelt um 14:52")
         #expect(summary.buttonTitle == "Einstempeln")
+        #expect(!model.menuBarContent.showsDot)
+        model.preferences.menuBarTime = .attendanceToday
         #expect(model.menuBarContent.text == "5:58")
+        #expect(model.menuBarContent.accessibilityLabel == "\(AppInfo.name), Anwesenheit heute 5 Stunden 58 Minuten")
         #expect(model.menuBarContent.toolTip == "Projektzeit heute 0:00 Std.\nAnwesend heute 5:58 Std.")
     }
 

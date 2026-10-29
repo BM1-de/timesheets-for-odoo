@@ -51,7 +51,7 @@ final class StatusBarController: NSObject {
     private func updateStatusItem() {
         guard let button = statusItem.button else { return }
         let content = model.menuBarContent
-        button.image = MenuBarIcon.image(content.symbol, isSignedIn: content.isSignedIn)
+        button.image = MenuBarIcon.image(content.symbol, showsDot: content.showsDot, isSignedIn: content.isSignedIn)
         button.title = content.text.isEmpty ? "" : " " + content.text
         button.setAccessibilityLabel(content.accessibilityLabel)
         button.toolTip = content.isSignedIn ? content.toolTip : String(localized: "\(AppInfo.name): bitte anmelden")
@@ -292,10 +292,12 @@ enum PanelMetrics {
     static let gapBelowMenuBar: CGFloat = 5
 }
 
-/// Uhr, Stoppuhr oder Person als Vorlagenbild, das sich wie jedes Menüleistensymbol an hell und dunkel anpasst.
+/// Uhr, Stoppuhr oder Person als Vorlagenbild, das sich wie jedes Menüleistensymbol an hell und dunkel anpasst;
+/// mit grünem Punkt davor, solange eingestempelt.
 enum MenuBarIcon {
     @MainActor
-    static func image(_ symbol: AppModel.MenuBarContent.Symbol = .clock, isSignedIn: Bool) -> NSImage? {
+    static func image(_ symbol: AppModel.MenuBarContent.Symbol = .clock, showsDot: Bool = false,
+                      isSignedIn: Bool) -> NSImage? {
         let configuration = NSImage.SymbolConfiguration(pointSize: 14, weight: .regular)
         let symbolName = switch symbol {
         case _ where !isSignedIn: "clock.badge.questionmark"
@@ -303,9 +305,29 @@ enum MenuBarIcon {
         case .stopwatch: "stopwatch"
         case .person: "person"
         }
-        let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: AppInfo.name)?
-            .withSymbolConfiguration(configuration)
-        symbol?.isTemplate = true
-        return symbol
+        guard let symbol = NSImage(systemSymbolName: symbolName, accessibilityDescription: AppInfo.name)?
+            .withSymbolConfiguration(configuration) else { return nil }
+        guard showsDot else {
+            symbol.isTemplate = true
+            return symbol
+        }
+
+        let dot: CGFloat = 6
+        let gap: CGFloat = 4
+        let size = NSSize(width: dot + gap + symbol.size.width, height: max(symbol.size.height, dot))
+        // Der Inhalt wird beim Zeichnen erzeugt; `labelColor` folgt so dem Erscheinungsbild der Menüleiste.
+        let image = NSImage(size: size, flipped: false) { rect in
+            NSColor.systemGreen.setFill()
+            NSBezierPath(ovalIn: NSRect(x: 0, y: (rect.height - dot) / 2, width: dot, height: dot)).fill()
+            let symbolRect = NSRect(x: dot + gap, y: (rect.height - symbol.size.height) / 2,
+                                    width: symbol.size.width, height: symbol.size.height)
+            symbol.draw(in: symbolRect)
+            NSColor.labelColor.setFill()
+            symbolRect.fill(using: .sourceAtop)
+            return true
+        }
+        image.isTemplate = false
+        image.accessibilityDescription = AppInfo.name
+        return image
     }
 }
