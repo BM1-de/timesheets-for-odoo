@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.2 – 2026-11-01
 
 - Odoo Online no longer answers with error 429: the app sends its requests one after the other and
   waits when Odoo reports too many requests.
