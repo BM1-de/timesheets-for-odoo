@@ -24,6 +24,8 @@ enum OdooError: Error, Equatable, Sendable {
     case accessDenied(String)
     /// Odoo lehnt die Eingabe ab, mit einer Meldung für den Benutzer.
     case rejected(String)
+    /// Odoo meldet auch nach Wartezeiten zu viele Anfragen (HTTP 429).
+    case rateLimited
     /// Sonstiger Fehler auf dem Server.
     case server(String)
     /// Antwort ohne erwartetes Format.
@@ -86,6 +88,8 @@ extension OdooError: LocalizedError {
             return message.isEmpty ? String(localized: "Dafür fehlen in Odoo die Rechte.") : message
         case .rejected(let message):
             return message
+        case .rateLimited:
+            return String(localized: "Odoo meldet zu viele Anfragen. Bitte gleich noch einmal versuchen.")
         case .server(let message):
             return String(localized: "Odoo meldet einen Fehler: \(message)")
         case .unexpectedResponse(let message):

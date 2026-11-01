@@ -226,3 +226,120 @@ struct ConnectorTests {
         }
     }
 }
+
+@Suite("Zu viele Anfragen")
+struct PacedHTTPClientTests {
+    private final class Recorder: @unchecked Sendable {
+        private let lock = NSLock()
+        private var slept: [Duration] = []
+        private var current = Date(timeIntervalSince1970: 1_000)
+
+        var waits: [Duration] { lock.withLock { slept } }
+        var now: Date { lock.withLock { current } }
+
+        func wait(_ duration: Duration) { lock.withLock { slept.append(duration) } }
+        func advance(by seconds: TimeInterval) { lock.withLock { current.addTimeInterval(seconds) } }
+    }
+
+    /// Antwortet nach kurzer Zeit und merkt sich, wie viele Anfragen gleichzeitig liefen.
+    private final class ConcurrencyProbe: HTTPClient, @unchecked Sendable {
+        private let lock = NSLock()
+        private var active = 0
+        private var highest = 0
+
+        var mostAtOnce: Int { lock.withLock { highest } }
+
+        private func change(by delta: Int) {
+            lock.withLock {
+                active += delta
+                highest = max(highest, active)
+            }
+        }
+
+        func send(_ request: URLRequest) async throws -> (Data, HTTPURLResponse) {
+            change(by: 1)
+            defer { change(by: -1) }
+            try await Task.sleep(for: .milliseconds(5))
+            return StubHTTPClient.response(to: request, with: StubHTTPClient.json([]))
+        }
+    }
+
+    private static func tooMany(retryAfter: String? = nil) -> StubHTTPClient.Reply {
+        var reply = StubHTTPClient.html(status: 429)
+        if let retryAfter { reply.headers["Retry-After"] = retryAfter }
+        return reply
+    }
+
+    private func client(_ http: any HTTPClient, _ recorder: Recorder) -> PacedHTTPClient {
+        PacedHTTPClient(base: http, clock: { recorder.now }, sleep: { recorder.wait($0) })
+    }
+
+    @Test("wiederholt nach HTTP 429 und beachtet Retry-After")
+    func retriesAfterWaiting() async throws {
+        let recorder = Recorder()
+        let replies = NSLock()
+        nonisolated(unsafe) var isFirst = true
+        let http = StubHTTPClient { _ in
+            replies.withLock {
+                defer { isFirst = false }
+                return isFirst ? Self.tooMany(retryAfter: "3") : StubHTTPClient.json([])
+            }
+        }
+        let (_, response) = try await client(http, recorder).send(URLRequest(url: server))
+        #expect(response.statusCode == 200)
+        #expect(http.requests.count == 2)
+        #expect(recorder.waits == [.seconds(3)])
+    }
+
+    @Test("gibt nach drei Wiederholungen auf und fragt eine Weile nicht mehr an")
+    func pausesAfterGivingUp() async throws {
+        let recorder = Recorder()
+        let http = StubHTTPClient { _ in Self.tooMany() }
+        let paced = client(http, recorder)
+        let request = URLRequest(url: server)
+        await #expect(throws: OdooError.rateLimited) { _ = try await paced.send(request) }
+        #expect(http.requests.count == 4)
+        #expect(recorder.waits == [.seconds(2), .seconds(4), .seconds(8)])
+
+        await #expect(throws: OdooError.rateLimited) { _ = try await paced.send(request) }
+        #expect(http.requests.count == 4)
+
+        recorder.advance(by: 31)
+        await #expect(throws: OdooError.rateLimited) { _ = try await paced.send(request) }
+        #expect(http.requests.count == 8)
+    }
+
+    @Test("wartet nicht, wenn Retry-After zu lang ist")
+    func longRetryAfterFailsAtOnce() async throws {
+        let recorder = Recorder()
+        let http = StubHTTPClient { _ in Self.tooMany(retryAfter: "120") }
+        let paced = client(http, recorder)
+        await #expect(throws: OdooError.rateLimited) { _ = try await paced.send(URLRequest(url: server)) }
+        #expect(http.requests.count == 1)
+        #expect(recorder.waits.isEmpty)
+    }
+
+    @Test("schickt gleichzeitige Anfragen nacheinander")
+    func sendsOneAtATime() async throws {
+        let probe = ConcurrencyProbe()
+        let paced = PacedHTTPClient(base: probe)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for _ in 0..<5 {
+                group.addTask { _ = try await paced.send(URLRequest(url: server)) }
+            }
+            try await group.waitForAll()
+        }
+        #expect(probe.mostAtOnce == 1)
+    }
+
+    @Test("Anmeldung bei Odoo Online fragt bei HTTP 429 nicht nach dem Benutzernamen")
+    func connectReportsRateLimit() async throws {
+        let recorder = Recorder()
+        let http = StubHTTPClient { _ in Self.tooMany() }
+        let connector = Connector(http: client(http, recorder))
+        let url = try #require(URL(string: "https://firma.odoo.com"))
+        await #expect(throws: OdooError.rateLimited) {
+            _ = try await connector.connect(serverURL: url, apiKey: "geheim", login: nil, database: nil)
+        }
+    }
+}

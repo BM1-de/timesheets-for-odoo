@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Odoo Online no longer answers with error 429: the app sends its requests one after the other and
+  waits when Odoo reports too many requests.
 - The gear menu at the bottom of the window offers “Check for Updates…” too, like the context menu
   of the menu bar icon.
 

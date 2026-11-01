@@ -42,7 +42,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         #endif
         NSApp.mainMenu = MainMenu.make(delegate: self)
 
-        let model = AppModel(preferences: Preferences(), http: DemoRoutingHTTPClient(network: URLSessionHTTPClient.makeDefault()),
+        let model = AppModel(preferences: Preferences(), http: DemoRoutingHTTPClient(network: PacedHTTPClient(base: URLSessionHTTPClient.makeDefault())),
                              secrets: KeychainStore(service: AppInfo.bundleIdentifier))
         LoginItem.applyDefault(model.preferences)
         let updates = Self.makeUpdates()
